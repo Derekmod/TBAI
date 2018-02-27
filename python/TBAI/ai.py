@@ -9,7 +9,6 @@ import math
 
 '''PENDING
 add certainty or uncertainty
-    end states have perfect certainty
     unexplored states have perfect uncertainty
     Must be used in recalculating value
     If changes significantly, recalculate parent
@@ -31,7 +30,7 @@ clean recalcValue
 
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
-    def __init__(self, num_features=0, feature_extractor=None, architecture=None):
+    def __init__(self, num_features=0, feature_extractor=None, architecture=None, max_uncertainty=8.):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
@@ -45,6 +44,8 @@ class AIPlayer(Player):
         if not feature_extractor:
             self._feature_extractor = lambda(state): []
 
+        self._max_uncertainty = max_uncertainty
+
         #TODO: use architecture to initialize model
         #self.initialize_model()
 
@@ -53,16 +54,15 @@ class AIPlayer(Player):
         Args:
             state: <State> state of game
         Returns:
-            <float> win probability. Lies in [0,1]
-            <float> uncertainty. Lies in [0,?)
+            <float [0,1]> win probability
+            <float [0, max]> uncertainty
         '''
-        # TODO output uncertainty
         victor = state.checkVictory()
         if victor >= 0:
-            return float(victor)
+            return (float(victor), 0)
         features = self._feature_extractor(state)
         # PENDING: use neural net
-        return 0.5
+        return (0.5, self._max_uncertainty)
 
     def getMove(self, state):
         '''Make the AI make a move.
@@ -75,14 +75,17 @@ class AIPlayer(Player):
         value_fn = lambda(node): node.depth #TODO strengthen
         pq = PriorityQueue(hash_fn, value_fn)
 
-        root = StateNode(state, real_turn=state.player_turn, prob_power=2.)
+        player_info = PlayerInfo(turn = state.player_turn,
+                                 prob_power = 2.,
+                                 max_uncertainty=self._max_uncertainty)
+        root = StateNode(state, player_info)
         pq.add(root)
 
         nchecked = 0
         while nchecked < 100000 and len(pq): #terminal condition
             next = pq.pop()
-            heur_val = self.heur(next.state)
-            new_nodes = next.check(heur_val)
+            heur_bundle = self.heur(next.state)
+            new_nodes = next.check(heur_bundle)
 
             for new_node in new_nodes:
                 pq.add(new_node)
@@ -113,7 +116,7 @@ class StateNode(object):
         value: <float> in [0,1] (ONLY ACCESSED BY PARENT) #TODO issue
         uncertainty: <float> in [0,?)
     '''
-    def __init__(self, state, real_turn=0, parent=None, move=None, prob_power=1.):
+    def __init__(self, state, player_info, parent=None, move=None):
         '''Create StateNode.
         Args:
             state: <State>
@@ -123,10 +126,10 @@ class StateNode(object):
             prob_power: <float> assumed skill of play #PENDING rework
         '''
         self._state = state
-        self._real_turn = real_turn
         self._parent = parent
         self._move = move
-        self._prob_power = prob_power
+        
+        self._player_info = player_info
 
         self._checked = False
         self._children = []
@@ -138,28 +141,31 @@ class StateNode(object):
         self._self_value = 0.5
         self._reported_value = 0.5
         self._expected_value = 0.5
-        self._uncertainty = 1. #PENDING, should be maximum here
+        self._uncertainty = player_info.max_uncertainty
 
         self._pending_moves = []
 
-    def check(self, heur_val, uncertainty=1.):
+    def check(self, heur_bundle):
         '''Gives a node a heuristic value.
         Tells parent to update if there was significant change.
         Returns:
             [StateNode]: list of new nodes to explore
         '''
+        heur_val, uncertainty = heur_bundle
+
         self._checked = True
 
         self._self_value = heur_val
         self._reported_value = heur_val
         self._expected_value = heur_val
+        self._uncertainty = uncertainty
 
         # TODO: clean
         parent_ret = []
         if self._parent:
             self.parent.recalcValue()
             parent_ret = self._parent._addChild()
-        if heur_val < 1. and heur_val > 0.: #PENDING use uncertainty instead
+        if uncertainty > 0:
             self._pending_moves = np.random.permutation(self._state.moves).tolist() #FUTURE: some way of ordering moves
             return parent_ret + self._addChild()
         else: 
@@ -177,7 +183,7 @@ class StateNode(object):
         move = self._pending_moves.pop(-1)
 
         new_state = self._state.enactMove(move)
-        new_node = StateNode(new_state, parent=self, move=move, real_turn=self._real_turn, prob_power=self._prob_power)
+        new_node = StateNode(new_state, self._player_info, self, move)
         self._children.append(new_node)
         return [new_node]
 
@@ -191,9 +197,9 @@ class StateNode(object):
         values = [child.value for child in self.children]
         choice_probs = _choiceProbs(values=values,
                                     turn_sign=sign, 
-                                    my_turn=self.state.player_turn != self._real_turn, # TODO: why not when they're equal?
+                                    my_turn=self.state.player_turn != self._player_info.turn, # TODO: why not when they're equal?
                                     num_unknown=len(self._pending_moves),
-                                    prob_power=self._prob_power )
+                                    prob_power=self._player_info.prob_power)
 
         p_novel = 1 - float(len(values)) / float(len(values) + len(self._pending_moves))
 
@@ -284,3 +290,11 @@ def _choiceProbs(values, turn_sign, my_turn=False, num_unknown=0, prob_power=1.)
         for i in range(len(uprobs)):
             uprobs[i] /= scale
         return uprobs
+
+
+class PlayerInfo(object):
+    '''Stores player info.'''
+    def __init__(self, turn=0, prob_power=1., max_uncertainty=1.):
+        self.turn = turn
+        self.prob_power = prob_power
+        self.max_uncertainty = max_uncertainty
