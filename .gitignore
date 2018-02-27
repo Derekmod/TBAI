@@ -1,3 +1,9 @@
+# python
+*.pyc
+
+# Visual Studio
+*.pyproj
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
