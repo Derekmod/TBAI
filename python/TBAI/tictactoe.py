@@ -27,7 +27,7 @@ class TicTacToeGameState(GameState):
     def enactMove(self, move):
         row, col = move.coords
         if self._position[row][col] >= 0:
-            print 'ERROR: location already filled'
+            print('ERROR: location already filled')
             exit()
 
         new_state = copy.deepcopy(self)
@@ -98,7 +98,7 @@ class TicTacToeGameState(GameState):
 
     def recalcCompressed(self):
         features = self._position[0] + self._position[1] + self._position[2]
-        #print features
+        #print(features
 
         self._compressed = min([sum([features[order[i]]*POWERS_OF_THREE[i] for i in range(9)]) for order in TIC_TAC_TOE_ORDERINGS])
 
@@ -144,7 +144,7 @@ class HumanTicTacToePlayer(Player):
                 if mrow == row and mcol == col:
                     return move
 
-            print 'illegal move: (%d,%d)' % (row, col)
+            print('illegal move: (%d,%d)' % (row, col))
 
 
 class TicTacToeGame(Game):
@@ -156,26 +156,26 @@ class TicTacToeGame(Game):
 
     def start(self, display=True):
         if self.num_players < 2:
-            print 'ERROR: not enough players'
+            print('ERROR: not enough players')
             return
 
         while self._state.checkVictory() < 0:
-            print 'current victor: ', self._state.checkVictory()
+            print('current victor: ', self._state.checkVictory())
             if display:
-                print '\n\n\n'
-                print self._state.toString()
+                print('\n\n\n')
+                print(self._state.toString())
             player = self._players[self._state.player_turn]
             move = player.getMove(self._state)
-            print move.coords
+            print(move.coords)
             if self._verifyKey(move.player_key) or True: #TODO use key
                 self._state = self._state.enactMove(move)
 
         victor = self._state.checkVictory()
         if victor == 0.5:
-            print 'Tie!\n\n'
+            print('Tie!\n\n')
         else:
-            print 'Player %d won!\n\n' % victor
-        print self._state.toString()
+            print('Player %d won!\n\n' % victor)
+        print(self._state.toString())
 
     def _verifyKey(self, key):
         true_key = self._players[self._state.player_turn]

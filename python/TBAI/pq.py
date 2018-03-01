@@ -12,7 +12,7 @@ class PriorityQueue(object):
         self._hash_function = hash_function
         self._value_function = value_function
         if not low_best:
-            self._value_function = lambda(item): -value_function(item)
+            self._value_function = lambda item: -value_function(item)
 
     def pop(self):
         self._size -= 1
@@ -104,7 +104,7 @@ class PriorityQueue(object):
     def _bubble(self, idx):
         val = self._value_function(self._items[idx])
         while idx > 0:
-            parent_idx = (idx-1)/2
+            parent_idx = int((idx-1)/2)
             parent_val = self._value_function(self._items[parent_idx])
             if parent_val > val:
                 self._swap(idx, parent_idx)
@@ -125,18 +125,18 @@ class PriorityQueue(object):
 
     def validate(self):
         if self._last_filled >= len(self._items):
-            print '"last filled" too high: %d' % self._last_filled
+            print('"last filled" too high: %d' % self._last_filled)
             return False
 
         if self._first_empty < 0:
-            print '"first empty" too low: %d' % self._first_empty
+            print('"first empty" too low: %d' % self._first_empty)
             return False
 
         op = range(len(self._items))
         op.reverse()
         for i in op[:-1]:
             if self._items[i] and not self._items[(i-1)/2]:
-                print 'slot %d empty with real child: %d' % ((i-1)/2, i)
+                print('slot %d empty with real child: %d' % ((i-1)/2, i))
                 return False
 
         return True
