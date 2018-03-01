@@ -8,24 +8,37 @@ import numpy as np
 import math
 
 '''PENDING
-add certainty or uncertainty
-    unexplored states have perfect uncertainty
-    Must be used in recalculating value
-    If changes significantly, recalculate parent
 Stronger priority
     use uncertainty
     use derivative of uncertainty
-Update threshholds
-    consistent specification
+    IGNORE PREVIOUS? - use total choice probability of state
+Rework recalc
+    use uncertainty
+        if uncertainty changes, recalc parent
+        compute uncertainty
+        compute derivative of uncertainty
+        surprise = err^2 + w|uncertainty - err^2|
+    Update threshholds
+        consistent specification
     minimal computation at update
 Rework choiceProbs
     add uncertainty to input and output
-    remove 'my_turn'
-        replace with some specification to choose maximum
-        implement minimum?
+    implement minimum/maximum
     assign unseen values to the value of parent
-Implement State comparisons so that we don't check states twice
-clean recalcValue
+PQ
+    Accelerate pop-push combined functionality in pq
+    Implement max-items in pq
+handle case where all choice probs are 0, still need value of parent
+Stabalize 'depth' (currently can be corrupted when de-duping
+
+Training heuristic:
+    Every time a node is updated, add it to a list of nodes to train on
+    At termination:
+        order the list of training nodes (by how surprising they are and how probable they are)
+        use the most surprising examples as training points for the network
+Training protocol:
+    ?
+
 '''
 
 class AIPlayer(Player):
@@ -49,7 +62,7 @@ class AIPlayer(Player):
         #TODO: use architecture to initialize model
         #self.initialize_model()
 
-    def heur(self, state):
+    def heur(self, state, train=True):
         '''Heuristic estimate of win probability.
         Args:
             state: <State> state of game
@@ -76,21 +89,41 @@ class AIPlayer(Player):
         pq = PriorityQueue(hash_fn, value_fn)
 
         player_info = PlayerInfo(turn = state.player_turn,
-                                 prob_power = 2.,
-                                 max_uncertainty=self._max_uncertainty)
+                                 prob_power = 0.1,
+                                 max_uncertainty = self._max_uncertainty)
         root = StateNode(state, player_info)
         pq.add(root)
 
+        redundant = dict()
+
         nchecked = 0
-        while nchecked < 100000 and len(pq): #terminal condition
+        while nchecked < 5 and len(pq): #terminal condition
             next = pq.pop()
-            heur_bundle = self.heur(next.state)
+            next_state = next.state
+            compressed = next_state.compressed
+            if compressed not in redundant:
+                redundant[compressed] = next
+            else:
+                original = redundant[compressed]
+                #next = redundant[compressed]
+                #for new_node in next.parent._addChild():
+                for new_node in next.reportRedundant(original):
+                    pq.add(new_node)
+                continue
+
+            heur_bundle = self.heur(next_state)
             new_nodes = next.check(heur_bundle)
 
             for new_node in new_nodes:
                 pq.add(new_node)
             nchecked += 1
         print 'Checked %d states' % nchecked
+        # PENDING: train on training nodes
+        print '%d states left for training' % len(player_info.training_nodes)
+
+        #cleanNode(root)
+        #for child in root.children:
+        #    child.recalcValue(verbose=True)
 
         # find best move
         # PENDING: add randomness
@@ -103,6 +136,16 @@ class AIPlayer(Player):
 
         #return state.moves[0] #TEMP
         return best_node.move
+
+def cleanNode(node):
+    p_novel = node.recalcValue(verbose=False)
+    if p_novel != 0.:
+        print node.state.toString()
+        print 'npending:', len(node._pending_moves)
+        asdlfja = 1/0
+    for child in node.children:
+        if child.children:
+            cleanNode(child)
 
 
 class StateNode(object):
@@ -126,22 +169,24 @@ class StateNode(object):
             prob_power: <float> assumed skill of play #PENDING rework
         '''
         self._state = state
+        self._parents = set()
+        if parent:
+            self._parents.add(parent)
         self._parent = parent
         self._move = move
         
         self._player_info = player_info
 
         self._checked = False
-        self._children = []
+        self._children = set()
+        self._compressed_children = set()
+        self._child_values = dict()
+        self._child_uprobs = dict()
+        self._prob_scale = 0.
         self._depth = 0
         if parent:
             self._depth = parent._depth + 1
-
-        # TODO: use parent value instead of 0.5
-        self._self_value = 0.5
-        self._reported_value = 0.5
-        self._expected_value = 0.5
-        self._uncertainty = player_info.max_uncertainty
+        self._max_children = 0
 
         self._pending_moves = []
 
@@ -160,73 +205,139 @@ class StateNode(object):
         self._expected_value = heur_val
         self._uncertainty = uncertainty
 
-        # TODO: clean
-        parent_ret = []
+        # TODO: get (unscaled) choice prob
+        #parent_utility = get_utility(self._self_value, self.parent.state.player_turn)
+        #self._choice_uprob = parent_utility ** self._player_info.prob_power
+        # self.parent.choice_scale += self.choice_uprbo
+        
+        #for tp in values:
+        #    p = tp*turn_sign + 1 - player_turn
+        #    choice_prob = p**prob_power
+        #    uprobs += [choice_prob]
+        #    scale += choice_prob
+        #scale *= float(ntotal) / float(len(values))
+        #for i in range(len(uprobs)):
+        #    uprobs[i] /= scale
+        #return uprobs
+
+        # TODO: tell parent about my unscaled choice prob
+        # TODO: use parent's total choice prob to calculate my own choice prob
+
+        added_nodes = []
+        for parent in self._parents:
+            parent.registerChild(self)
         if self._parent:
-            self.parent.recalcValue()
-            parent_ret = self._parent._addChild()
-        if uncertainty > 0:
+            added_nodes += self._parent._addChild()
+        if uncertainty > 0: # PENDING: and choice_prob > 0.
             self._pending_moves = np.random.permutation(self._state.moves).tolist() #FUTURE: some way of ordering moves
-            return parent_ret + self._addChild()
-        else: 
-            return parent_ret
+            self._max_children = len(self._pending_moves)
+            added_nodes += self._addChild()
+        return added_nodes
 
     def _addChild(self):
         '''Uses a pending move to create child.
         If there is no pending move, will do nothing. #TODO check
         Returns:
-            <StateNode> new node to explore
+            [StateNode] new node to explore (can be empty)
         '''
-        if not len(self._pending_moves):
+        if not self._pending_moves:
             return []
 
         move = self._pending_moves.pop(-1)
 
         new_state = self._state.enactMove(move)
         new_node = StateNode(new_state, self._player_info, self, move)
-        self._children.append(new_node)
+        #self._children.add(new_node)
         return [new_node]
 
-    def recalcValue(self):
+    def registerChild(self, child):
+        '''Registers a node as a CHECKED child. '''
+        compressed = child.state.compressed
+        if compressed in self._compressed_children:
+            return
+
+        self._children.add(child)
+        self._compressed_children.add(compressed)
+
+        value = child._expected_value
+        self._child_values[compressed] = value
+        uprob = get_uprob(get_utility(value, self.state.player_turn),
+                          self._player_info)
+        self._child_uprobs[compressed] = uprob
+        self._prob_scale += uprob
+
+        # update uprobs and self value
+        self.recalcValue()  # TODO accelerate
+
+    def updateChildValue(self, child, value):
+        # TODO: implement
+        key = child.state.compressed
+        self._child_values[key] = value
+        self._prob_scale -= self._child_uprobs[key]
+        uprob = get_uprob(get_utility(value, self.state.player_turn),
+                                            self._player_info)
+        self._child_uprobs[key] = uprob
+        self._prob_scale += uprob
+
+        self.recalcValue()
+
+    def addParent(self, parent):
+        self._parents.add(parent)
+
+    def reportRedundant(self, original):
+        if not self._parent:
+            return []
+
+        #self._parent._children.remove(self)
+        #self._max_children -= 1
+        for parent in self._parents:
+            if parent in original._parents:
+                parent._max_children -= 1
+            parent.registerChild(original)
+            original.addParent(parent)
+        return self._parent._addChild()
+
+    def recalcValue(self, verbose=False):
         '''Recalculates expected value.
         If changed, tells parent to recalculate.
         '''
-        # TODO: optimize to only update based on last change
-        sign = 2*self.state.player_turn - 1 # direction of sign is good
+        if verbose:
+            print [self._child_values[compressed_child] for compressed_child in self._compressed_children]
+            print [self._child_uprobs[compressed_child] for compressed_child in self._compressed_children]
+            print 'max children:', self._max_children
+        p_novel = float(self._max_children - len(self._children)) / float(self._max_children)
+        if verbose:
+            print 'p_novel:', p_novel
+        seen_value = 0.
+        if self._prob_scale > 1e-9:
+            uvalue = sum([self._child_values[child.state.compressed] * self._child_uprobs[child.state.compressed]
+                            for child in self._children])
+            seen_value = uvalue / self._prob_scale * (1-p_novel)
+        else:
+            p_novel = 1.  # FUTURE: revisit
+        self._expected_value = seen_value + self._self_value * p_novel
 
-        values = [child.value for child in self.children]
-        choice_probs = _choiceProbs(values=values,
-                                    turn_sign=sign, 
-                                    my_turn=self.state.player_turn != self._player_info.turn, # TODO: why not when they're equal?
-                                    num_unknown=len(self._pending_moves),
-                                    prob_power=self._player_info.prob_power)
+        surprise = abs(self._expected_value - self._self_value)
+        if surprise > 1e-10:
+            self._player_info.training_nodes.addNoDuplicate((surprise, self.state))
 
-        p_novel = 1 - float(len(values)) / float(len(values) + len(self._pending_moves))
+        if self._parents and surprise > 1e-9:
+            self._reported_value = self._expected_value
+            # FUTURE make condition smarter
+            for parent in self._parents:
+                parent.updateChildValue(self, self._reported_value)
 
-        sum_value = p_novel * self._self_value
-        #sum_weight = 0.
-        for i in range(len(values)):
-            sum_value += values[i] * choice_probs[i]
-            #sum_weight += choice_probs[i]
-
-        self._expected_value = sum_value
-        if self.parent and abs(self._expected_value - self._reported_value) > 0.0001:
-            # TODO make condition smarter
-            self.parent.recalcValue()
-
-    @property
-    def parent(self):
-        return self._parent
-
+        return p_novel
+                
     @property
     def children(self):
         return self._children
 
     @property
     def value(self):
-        ### SHOULD ONLY BE ACCESSED BY PARENT ###
-        self._reported_value = self._expected_value
-        return self._reported_value
+        #self._reported_value = self._expected_value
+        #return self._reported_value
+        return self._expected_value
 
     @property
     def depth(self):
@@ -239,62 +350,22 @@ class StateNode(object):
     @property
     def move(self):
         return self._move
+    
+def get_utility(value, player_turn):
+    sign = 2*player_turn - 1
+    return sign*value + 1 - player_turn
 
-def _choiceProbs(values, turn_sign, my_turn=False, num_unknown=0, prob_power=1.):
-    '''Probability that a player will take certain actions.
-    Gives unseen moves average probability.
-    Args:
-        values: [float [0,1]] win probabilities
-        turn_sign: <int -1,1> sign of player_turn
-        my_turn: <bool> whether the player is myself
-        num_unknown: <int> number of unseen states
-        prob_power: <float> p_choice propto values**power
-    Returns:
-        [float [0,1]] probabilities of player choosing each action
-            does NOT sum to 1 unless num_unknown is 0    
-    '''
-    player_turn = 0.5 + 0.5*turn_sign
-    if not len(values):
-        return []
-
-    ntotal = len(values) + num_unknown
-
-    directed_values = []
-    for tp in values:
-        directed_values += [tp*turn_sign + 1 - player_turn]
-
-    if my_turn:
-        best_idx = 0
-        best_val = values[0]
-        for i in range(1, len(values)):
-            v = directed_values[i]
-            if v > best_val:
-                best_val = v
-                best_idx = i
-
-        ret = [0] * len(values)
-        ret[best_idx] = float(len(values))/float(ntotal)
-        return ret
-    elif sum(directed_values) == 0:
-        # TODO: verify
-        return [1./float(ntotal)] * len(values)
-    else:
-        uprobs = []
-        scale = 0.
-        for tp in values:
-            p = tp*turn_sign + 1 - player_turn
-            choice_prob = p**prob_power
-            uprobs += [choice_prob]
-            scale += choice_prob
-        scale *= float(ntotal) / float(len(values))
-        for i in range(len(uprobs)):
-            uprobs[i] /= scale
-        return uprobs
-
+def get_uprob(utility, player_info):
+    #return (utility + 0.05) ** player_info.prob_power
+    return (utility + player_info.utility_cap) / (1 + player_info.utility_cap - utility)
 
 class PlayerInfo(object):
     '''Stores player info.'''
-    def __init__(self, turn=0, prob_power=1., max_uncertainty=1.):
+    def __init__(self, turn=0, prob_power=1., max_uncertainty=1., training_nodes=None, utility_cap=1e-1):
         self.turn = turn
         self.prob_power = prob_power
         self.max_uncertainty = max_uncertainty
+        self.training_nodes = training_nodes
+        if self.training_nodes is None:
+            self.training_nodes = PriorityQueue(lambda(x): x[1].compressed, lambda(x): x[0]) # TODO: implement max items
+        self.utility_cap = utility_cap

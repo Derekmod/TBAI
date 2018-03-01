@@ -12,6 +12,7 @@ class TicTacToeGameState(GameState):
         self._turn_order = [0, 1]
 
         self._position = [[-1]*3 for _ in range(3)]
+        self.recalcCompressed()
 
     @property
     def moves(self):
@@ -32,6 +33,7 @@ class TicTacToeGameState(GameState):
         new_state = copy.deepcopy(self)
         new_state._position[row][col] = self.player_turn
         new_state._turn_idx += 1
+        new_state.recalcCompressed()
         return new_state
 
     def checkVictory(self):
@@ -94,6 +96,29 @@ class TicTacToeGameState(GameState):
                     flist += [1]
         return np.array(flist).astype(float)
 
+    def recalcCompressed(self):
+        features = self._position[0] + self._position[1] + self._position[2]
+        #print features
+
+        self._compressed = min([sum([features[order[i]]*POWERS_OF_THREE[i] for i in range(9)]) for order in TIC_TAC_TOE_ORDERINGS])
+
+    @property
+    def compressed(self):
+        return self._compressed
+
+    def __hash__(self):
+        return self._compressed
+
+
+TIC_TAC_TOE_ORDERINGS = ((0, 1, 2, 3, 4, 5, 6, 7, 8),
+                         (0, 3, 6, 1, 4, 7, 2, 5, 8),
+                         (2, 5, 8, 1, 4, 7, 0, 3, 6),
+                         (2, 1, 0, 5, 4, 3, 8, 7, 6),
+                         (8, 7, 6, 5, 4, 3, 2, 1, 0),
+                         (8, 5, 2, 7, 4, 1, 6, 3, 0),
+                         (6, 7, 8, 3, 4, 5, 0, 1, 2),
+                         (6, 3, 0, 7, 4, 1, 8, 5, 2))
+POWERS_OF_THREE = (1, 3, 9, 27, 81, 243, 729, 2187, 6561)
 
 class TicTacToeMove(object):
     def __init__(self, coords, player_key):

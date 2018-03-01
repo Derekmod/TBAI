@@ -56,6 +56,13 @@ class PriorityQueue(object):
             self._first_empty = len(self._items)
             self._items.append(None)
 
+    def addNoDuplicate(self, item):
+        hash = self._hash_function(item)
+        if hash in self._map:
+            self._items[self._map[hash]] = item
+            self.update(hash)
+        else:
+            self.add(item)
 
     def peek(self):
         return self._items[0]
@@ -96,11 +103,12 @@ class PriorityQueue(object):
 
     def _bubble(self, idx):
         val = self._value_function(self._items[idx])
-        while True:
+        while idx > 0:
             parent_idx = (idx-1)/2
             parent_val = self._value_function(self._items[parent_idx])
             if parent_val > val:
                 self._swap(idx, parent_idx)
+                idx = parent_idx
             else:
                 break
         return idx

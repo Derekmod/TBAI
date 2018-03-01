@@ -1,4 +1,4 @@
-
+import numpy as np
 
 class GameState(object):
     def __init__(self):
@@ -23,4 +23,11 @@ class GameState(object):
         return -1
     
     def features(self):
+        return np.array([])
+
+    @property
+    def compressed(self):
+        return self
+
+    def __hash__(self):
         return 0
