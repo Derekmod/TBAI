@@ -3,6 +3,8 @@
 
 # Visual Studio
 *.pyproj
+*/env3/*
+*/env3/
 
 # Windows image file caches
 Thumbs.db
