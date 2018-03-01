@@ -1,5 +1,6 @@
 '''Skeleton classes of heuristic minimax AIs.'''
 
+from __future__ import print_function
 from player import Player
 from gamestate import GameState
 from pq import PriorityQueue
@@ -55,7 +56,7 @@ class AIPlayer(Player):
         self._num_features = num_features
         self._feature_extractor = feature_extractor
         if not feature_extractor:
-            self._feature_extractor = lambda(state): []
+            self._feature_extractor = lambda state: []
 
         self._max_uncertainty = max_uncertainty
 
@@ -84,8 +85,8 @@ class AIPlayer(Player):
         Returns:
             <Move> in the move_list of 'state'
         '''
-        hash_fn = lambda(node): 0 #TODO remove
-        value_fn = lambda(node): node.depth #TODO strengthen
+        hash_fn = lambda node: 0 #TODO remove
+        value_fn = lambda node: node.depth #TODO strengthen
         pq = PriorityQueue(hash_fn, value_fn)
 
         player_info = PlayerInfo(turn = state.player_turn,
@@ -117,9 +118,9 @@ class AIPlayer(Player):
             for new_node in new_nodes:
                 pq.add(new_node)
             nchecked += 1
-        print 'Checked %d states' % nchecked
+        print('Checked %d states' % nchecked)
         # PENDING: train on training nodes
-        print '%d states left for training' % len(player_info.training_nodes)
+        print('%d states left for training' % len(player_info.training_nodes))
 
         #cleanNode(root)
         #for child in root.children:
@@ -129,8 +130,8 @@ class AIPlayer(Player):
         # PENDING: add randomness
         best_node = None
         for node in root.children:
-            print node.value
-            print node.state.toString()
+            print(node.value)
+            print(node.state.toString())
             if not best_node or (node.value - best_node.value) * (2*state.player_turn - 1) > 0:
                 best_node = node
 
@@ -140,8 +141,8 @@ class AIPlayer(Player):
 def cleanNode(node):
     p_novel = node.recalcValue(verbose=False)
     if p_novel != 0.:
-        print node.state.toString()
-        print 'npending:', len(node._pending_moves)
+        print(node.state.toString())
+        print('npending:', len(node._pending_moves))
         asdlfja = 1/0
     for child in node.children:
         if child.children:
@@ -302,12 +303,12 @@ class StateNode(object):
         If changed, tells parent to recalculate.
         '''
         if verbose:
-            print [self._child_values[compressed_child] for compressed_child in self._compressed_children]
-            print [self._child_uprobs[compressed_child] for compressed_child in self._compressed_children]
-            print 'max children:', self._max_children
+            print([self._child_values[compressed_child] for compressed_child in self._compressed_children])
+            print([self._child_uprobs[compressed_child] for compressed_child in self._compressed_children])
+            print('max children:', self._max_children)
         p_novel = float(self._max_children - len(self._children)) / float(self._max_children)
         if verbose:
-            print 'p_novel:', p_novel
+            print('p_novel:', p_novel)
         seen_value = 0.
         if self._prob_scale > 1e-9:
             uvalue = sum([self._child_values[child.state.compressed] * self._child_uprobs[child.state.compressed]
@@ -367,5 +368,5 @@ class PlayerInfo(object):
         self.max_uncertainty = max_uncertainty
         self.training_nodes = training_nodes
         if self.training_nodes is None:
-            self.training_nodes = PriorityQueue(lambda(x): x[1].compressed, lambda(x): x[0]) # TODO: implement max items
+            self.training_nodes = PriorityQueue(lambda x: x[1].compressed, lambda x: x[0]) # TODO: implement max items
         self.utility_cap = utility_cap
