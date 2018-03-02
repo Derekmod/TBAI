@@ -15,3 +15,5 @@ for _ in range(5):
 
     player1.key = game.registerPlayer(player1)
     player2.key = game.registerPlayer(player2)
+
+    game.start()
