@@ -12,7 +12,7 @@ class HeuristicDataset(Dataset):
 
     def __getitem__(self, idx):
         x = self.X[idx].astype(float)
-        x = self.Y[idx].astype(float)
+        y = self.Y[idx].astype(float)
         return {'x': x, 'y': y}
 
 
