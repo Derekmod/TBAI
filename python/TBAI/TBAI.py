@@ -12,9 +12,9 @@ player2 = HumanTicTacToePlayer()
 
 for _ in range(10000):
     training_game = TicTacToeGame()
-    game.registerPlayer(player1)
-    game.registerPlayer(player1)
-    game.start()
+    training_game.registerPlayer(player1)
+    training_game.registerPlayer(player1)
+    training_game.start()
 
 player1._max_states = 10
 
