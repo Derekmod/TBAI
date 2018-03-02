@@ -8,6 +8,7 @@ from pq import PriorityQueue
 from HeuristicDataset import HeuristicDataset, get_loader
 import torch.nn as nn
 import torch.optim as optim
+from torhc.autograd import Variable
 
 import numpy as np
 import math
@@ -80,7 +81,7 @@ class AIPlayer(Player):
         if victor >= 0:
             return (float(victor), 0)
         features = self._feature_extractor(state)
-        features = state.features()
+        features = Variable(state.features())
         # PENDING: use neural net
         if self._model:
             return self._model.forward(features)
