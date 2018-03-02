@@ -84,7 +84,7 @@ class TicTacToeGameState(GameState):
         return '\n'.join(['\t'.join([str(self._position[row][col]) for col in range(3)]) for row in range(3)])
 
     def features(self):
-        flist = []
+        flist = [self.player_turn]
         for row in range(3):
             for col in range(3):
                 val = self._position[row][col]

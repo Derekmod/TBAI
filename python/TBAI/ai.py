@@ -5,6 +5,8 @@ from player import Player
 from gamestate import GameState
 from pq import PriorityQueue
 
+from HeuristicDataset import HeuristicDataset, get_loader
+
 import numpy as np
 import math
 
@@ -44,7 +46,7 @@ Training protocol:
 
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
-    def __init__(self, num_features=0, feature_extractor=None, architecture=None, max_uncertainty=8.):
+    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8.):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
@@ -62,6 +64,7 @@ class AIPlayer(Player):
 
         #TODO: use architecture to initialize model
         #self.initialize_model()
+        self._model = model
 
     def heur(self, state, train=True):
         '''Heuristic estimate of win probability.
@@ -76,7 +79,10 @@ class AIPlayer(Player):
             return (float(victor), 0)
         features = self._feature_extractor(state)
         # PENDING: use neural net
-        return (0.5, self._max_uncertainty)
+        if self._model:
+            return self._model.forward(features)
+        else:
+            return (0.5, self._max_uncertainty)
 
     def getMove(self, state):
         '''Make the AI make a move.
@@ -122,6 +128,21 @@ class AIPlayer(Player):
         # PENDING: train on training nodes
         print('%d states left for training' % len(player_info.training_nodes))
 
+        X = []
+        Y = []
+        while len(player_info.training_nodes):
+            _, node = player_info.training_nodes.pop()
+            value = node._expected_value
+            err = (node._expected_value - node._self_value) ** 2
+            
+            x = node.state.features()
+            y = np.array([value, err])
+
+            X += [x]
+            Y += [y]
+
+        self.train(X, Y)
+
         #cleanNode(root)
         #for child in root.children:
         #    child.recalcValue(verbose=True)
@@ -137,6 +158,37 @@ class AIPlayer(Player):
 
         #return state.moves[0] #TEMP
         return best_node.move
+
+    def train(self, X, Y):
+        dataset = HeuristicDataset(X, Y)
+        loader = get_loader(dataset)
+
+        criterion = nn.MSELoss()
+        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+
+        for ep in range(1):
+            for i, data in enumerate(trainloader, 0):
+                # get the inputs
+                inputs, labels = data
+
+                # wrap them in Variable
+                inputs, labels = Variable(inputs), Variable(labels)
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                outputs = net(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                # print statistics
+                #running_loss += loss.data[0]
+                #if i % 2000 == 1999:    # print every 2000 mini-batches
+                #    print('[%d, %5d] loss: %.3f' %
+                #          (epoch + 1, i + 1, running_loss / 2000))
+                #    running_loss = 0.0
 
 def cleanNode(node):
     p_novel = node.recalcValue(verbose=False)
