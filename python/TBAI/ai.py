@@ -81,7 +81,7 @@ class AIPlayer(Player):
         if victor >= 0:
             return (float(victor), 0)
         features = self._feature_extractor(state)
-        features = Variable(state.features())
+        features = torch.from_numpy(state.features())
         # PENDING: use neural net
         if self._model:
             return self._model.forward(features)
