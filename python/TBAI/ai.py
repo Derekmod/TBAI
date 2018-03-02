@@ -87,7 +87,9 @@ class AIPlayer(Player):
         features = Variable(features)
         # PENDING: use neural net
         if self._model:
-            return self._model.forward(features)
+            ret = self._model.forward(features)
+            print(ret)
+            return ret
         else:
             return (0.5, self._max_uncertainty)
 
