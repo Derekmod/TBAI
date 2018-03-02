@@ -11,7 +11,7 @@ class TicTacToeNet(nn.Module):
         self.fc2 = nn.Linear(51, 20)
         self.fc3 = nn.Linear(21, 2)
         
-        self.fc_out = nn.Linear(1+9+50+20)
+        self.fc_out = nn.Linear(1+9+50+20, 2)
 
     def forward(self, x):
         turn = x[0:1]
