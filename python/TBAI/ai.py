@@ -88,11 +88,12 @@ class AIPlayer(Player):
         # PENDING: use neural net
         if self._model:
             ret = self._model.forward(features)
-            print(ret)
-            print(ret[0])
-            print(ret[1])
-            print(ret.tolist())
-            return ret
+            #print(ret)
+            #print(ret[0])
+            #print(ret[1])
+            #print(ret.tolist())
+            #return ret
+            return ret.data[0], ret.data[1]
         else:
             return (0.5, self._max_uncertainty)
 
