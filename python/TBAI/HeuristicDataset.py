@@ -11,8 +11,8 @@ class HeuristicDataset(Dataset):
         return len(self.X)
 
     def __getitem__(self, idx):
-        x = Variable(self.X[idx].astype(float))
-        x = Variable(self.Y[idx].astype(float))
+        x = self.X[idx].astype(float)
+        x = self.Y[idx].astype(float)
         return {'x': x, 'y': y}
 
 
