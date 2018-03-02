@@ -91,6 +91,7 @@ class AIPlayer(Player):
             print(ret)
             print(ret[0])
             print(ret[1])
+            print(ret.tolist())
             return ret
         else:
             return (0.5, self._max_uncertainty)
