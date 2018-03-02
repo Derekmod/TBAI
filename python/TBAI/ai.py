@@ -82,7 +82,7 @@ class AIPlayer(Player):
         if victor >= 0:
             return (float(victor), 0)
         features = self._feature_extractor(state)
-        features = torch.from_numpy(state.features())
+        features = Variable(torch.from_numpy(state.features()))
         # PENDING: use neural net
         if self._model:
             return self._model.forward(features)
@@ -178,7 +178,7 @@ class AIPlayer(Player):
                 inputs, labels = data
 
                 # wrap them in Variable
-                inputs, labels = torch.from_numpy(inputs), torch.from_numpy(labels)
+                inputs, labels = Variable(torch.from_numpy(inputs)), Variable(torch.from_numpy(labels))
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
