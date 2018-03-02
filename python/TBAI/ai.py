@@ -85,6 +85,7 @@ class AIPlayer(Player):
         features = torch.from_numpy(state.features())
         features = features.type(torch.FloatTensor)
         features = Variable(features)
+        print('features:', features)
         # PENDING: use neural net
         if self._model:
             ret = self._model.forward(features)
