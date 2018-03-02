@@ -30,12 +30,3 @@ class TicTacToeNet(nn.Module):
         #x = F.dropout(x, training=self.training)
         #x = self.fc2(x)
         #return F.log_softmax(x, dim=1)
-
-kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST('../data', train=True, download=True,
-                   transform=transforms.Compose([
-                       transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,))
-                   ])),
-    batch_size=args.batch_size, shuffle=True, **kwargs)
