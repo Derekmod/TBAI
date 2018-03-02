@@ -195,7 +195,7 @@ class AIPlayer(Player):
                 optimizer.zero_grad()
 
                 # forward + backward + optimize
-                outputs = self._model(inputs)
+                outputs = self._model.forward(inputs)
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
