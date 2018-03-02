@@ -19,6 +19,9 @@ class TicTacToeNet(nn.Module):
         print('x = ' + str(x))
         turn = x[0:1]
         #x1 = F.relu(self.fc1(x))
+        x = Variable(x)
+        print('x = ' + str(x))
+
         raw1 = self.fc1(x)
         x1 = F.relu(raw1)
         x2 = F.relu(self.fc2(x1))
