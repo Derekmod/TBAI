@@ -144,9 +144,9 @@ class AIPlayer(Player):
         X = []
         Y = []
         while len(player_info.training_nodes):
-            _, node = player_info.training_nodes.pop()
-            value = node._expected_value
-            err = (node._expected_value - node._self_value) ** 2
+            _, _, value, err = player_info.training_nodes.pop()
+            #value = node._expected_value
+            #err = (node._expected_value - node._self_value) ** 2
             
             x = node.state.features()
             y = np.array([value, err])
@@ -384,9 +384,10 @@ class StateNode(object):
             p_novel = 1.  # FUTURE: revisit
         self._expected_value = seen_value + self._self_value * p_novel
 
-        surprise = abs(self._expected_value - self._self_value)
+        err = (self._expected_value - self._self_value) ** 2
+        surprise = err
         if surprise > 1e-10:
-            self._player_info.training_nodes.addNoDuplicate((surprise, self.state))
+            self._player_info.training_nodes.addNoDuplicate((surprise, self.state, self._expected_value, err))
 
         if self._parents and surprise > 1e-9:
             self._reported_value = self._expected_value
