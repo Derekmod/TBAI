@@ -118,7 +118,7 @@ class AIPlayer(Player):
         redundant = dict()
 
         nchecked = 0
-        while nchecked < 5 and len(pq): #terminal condition
+        while nchecked < 1000 and len(pq): #terminal condition
             next = pq.pop()
             next_state = next.state
             compressed = next_state.compressed
@@ -166,7 +166,7 @@ class AIPlayer(Player):
         # PENDING: add randomness
         best_node = None
         for node in root.children:
-            print(node.value)
+            print(node.value, node._self_value)
             print(node.state.toString())
             if not best_node or (node.value - best_node.value) * (2*state.player_turn - 1) > 0:
                 best_node = node
