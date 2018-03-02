@@ -1,4 +1,4 @@
-from tictactoe import TicTacToeGame
+from tictactoe import TicTacToeGame, HumanTicTacToePlayer
 from game_utils import Player
 from ai import AIPlayer
 
