@@ -185,8 +185,8 @@ class AIPlayer(Player):
             for i, data in enumerate(loader, 0):
                 # get the inputs
                 inputs, labels = data['x'], data['y']
-                inputs = Variable(inputs)
-                labels = Variable(labels)
+                #inputs = Variable(inputs)
+                #labels = Variable(labels)
                 print('inputs: ', inputs)
                 print('labels: ', labels)
 

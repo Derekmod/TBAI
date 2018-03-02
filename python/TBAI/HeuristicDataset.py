@@ -10,7 +10,9 @@ class HeuristicDataset(Dataset):
         return len(self.X)
 
     def __getitem__(self, idx):
-        return {'x': self.X[idx], 'y': self.Y[idx]}
+        x = Variable(self.X.astype(float)[idx])
+        x = Variable(self.Y.astype(float)[idx])
+        return {'x': x, 'y': y}
 
 
 def get_loader(dataset):
