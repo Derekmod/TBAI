@@ -185,8 +185,10 @@ class AIPlayer(Player):
             for i, data in enumerate(loader, 0):
                 # get the inputs
                 inputs, labels = data['x'], data['y']
-                print(inputs)
-                print(labels)
+                inputs = Variable(inputs)
+                labels = Variable(labels)
+                print('inputs: ', inputs)
+                print('labels: ', labels)
 
                 # wrap them in Variable
                 #inputs, labels = Variable(torch.from_numpy(inputs)), Variable(torch.from_numpy(labels))
