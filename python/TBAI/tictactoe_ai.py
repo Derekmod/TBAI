@@ -9,7 +9,7 @@ class TicTacToeNet(nn.Module):
     def __init__(self):
         super(TicTacToeNet, self).__init__()
         self.fc1 = nn.Linear(10, 50)
-        self.fc2 = nn.Linear(5, 20)
+        self.fc2 = nn.Linear(50, 20)
         self.fc3 = nn.Linear(21, 2)
         
         self.fc_out = nn.Linear(1+9+50+20, 2)
