@@ -183,9 +183,7 @@ class AIPlayer(Player):
         for ep in range(1):
             for i, data in enumerate(loader, 0):
                 # get the inputs
-                inputs, labels = data
-                print(inputs)
-                print(labels)
+                inputs, labels = data['x'], data['y']
 
                 # wrap them in Variable
                 inputs, labels = Variable(torch.from_numpy(inputs)), Variable(torch.from_numpy(labels))
