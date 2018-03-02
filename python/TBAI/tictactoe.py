@@ -1,7 +1,4 @@
-from gamestate import GameState
-from game import Game
-from move import Move
-from player import Player
+from game_utils import *
 import copy
 import numpy as np
 import sys

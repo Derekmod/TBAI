@@ -1,5 +1,5 @@
-from tictactoe import *
-from player import Player
+from tictactoe import TicTacToeGame
+from game_utils import Player
 from ai import AIPlayer
 
 from tictactoe_ai import TicTacToeNet

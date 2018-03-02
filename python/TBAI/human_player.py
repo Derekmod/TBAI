@@ -1,4 +1,4 @@
-from player import Player
+from game_utils import Player
 import sys
 
 

@@ -1,8 +1,7 @@
 '''Skeleton classes of heuristic minimax AIs.'''
 
 from __future__ import print_function
-from player import Player
-from gamestate import GameState
+from game_utils import Player
 from pq import PriorityQueue
 
 from HeuristicDataset import HeuristicDataset, get_loader
