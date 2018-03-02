@@ -15,12 +15,12 @@ class HeuristicDataset(Dataset):
         x = self.X[idx]
         x = torch.from_numpy(x)
         x = x.type(torch.FloatTensor)
-        x = Variable(x)
+        #x = Variable(x)
 
         y = self.Y[idx]
         y = torch.from_numpy(y)
         y = y.type(torch.FloatTensor)
-        y = Variable(y)
+        #y = Variable(y)
         return {'x': x, 'y': y}
 
 
