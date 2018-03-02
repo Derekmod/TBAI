@@ -179,7 +179,7 @@ class AIPlayer(Player):
         loader = get_loader(dataset)
 
         criterion = nn.MSELoss()
-        optimizer = optim.SGD(self._model.parameters(), lr=0.001, momentum=0.9)
+        optimizer = optim.SGD(self._model.parameters(), lr=0.1, momentum=0.9)
 
         for ep in range(1):
             for i, data in enumerate(loader, 0):
