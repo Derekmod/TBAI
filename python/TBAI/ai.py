@@ -144,7 +144,7 @@ class AIPlayer(Player):
         X = []
         Y = []
         while len(player_info.training_nodes):
-            _, _, value, err = player_info.training_nodes.pop()
+            _, node, value, err = player_info.training_nodes.pop()
             #value = node._expected_value
             #err = (node._expected_value - node._self_value) ** 2
             
