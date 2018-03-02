@@ -89,6 +89,8 @@ class AIPlayer(Player):
         if self._model:
             ret = self._model.forward(features)
             print(ret)
+            print(ret[0])
+            print(ret[1])
             return ret
         else:
             return (0.5, self._max_uncertainty)
