@@ -178,7 +178,7 @@ class AIPlayer(Player):
                 inputs, labels = data
 
                 # wrap them in Variable
-                inputs, labels = Variable(inputs), Variable(labels)
+                inputs, labels = torch.from_numpy(inputs), torch.from_numpy(labels)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
