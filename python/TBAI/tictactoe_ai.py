@@ -16,11 +16,10 @@ class TicTacToeNet(nn.Module):
         self.fc_out = nn.Linear(1+9+50+20, 2)
 
     def forward(self, x):
-        print('x = ' + str(x))
-        turn = x[0:1]
+        print('(forward) x = ' + str(x))
+        #turn = x[0:1]
         #x1 = F.relu(self.fc1(x))
         #x = Variable(x)
-        print('x = ' + str(x))
 
         raw1 = self.fc1(x)
         x1 = F.relu(raw1)
