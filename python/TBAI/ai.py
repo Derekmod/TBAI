@@ -7,6 +7,7 @@ from pq import PriorityQueue
 
 from HeuristicDataset import HeuristicDataset, get_loader
 import torch.nn as nn
+import torch.optim as optim
 
 import numpy as np
 import math
