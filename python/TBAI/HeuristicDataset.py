@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
+from torch.autograd import Variable
 
 
 class HeuristicDataset(Dataset):
