@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 
 
 
@@ -17,6 +18,7 @@ class TicTacToeNet(nn.Module):
     def forward(self, x):
         turn = x[0:1]
         #x1 = F.relu(self.fc1(x))
+        x = Variable(x)
         raw1 = self.fc1(x)
         x1 = F.relu(raw1)
         x2 = F.relu(self.fc2(x1))
