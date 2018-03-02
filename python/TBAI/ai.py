@@ -50,7 +50,7 @@ Training protocol:
 
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
-    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8.):
+    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
@@ -65,6 +65,7 @@ class AIPlayer(Player):
             self._feature_extractor = lambda state: []
 
         self._max_uncertainty = max_uncertainty
+        self._max_states = max_states
 
         #TODO: use architecture to initialize model
         #self.initialize_model()
@@ -85,7 +86,7 @@ class AIPlayer(Player):
         features = torch.from_numpy(state.features())
         features = features.type(torch.FloatTensor)
         features = Variable(features)
-        print('features: ' + str(features))
+        #print('features: ' + str(features))
         # PENDING: use neural net
         if self._model:
             ret = self._model.forward(features)
@@ -118,7 +119,7 @@ class AIPlayer(Player):
         redundant = dict()
 
         nchecked = 0
-        while nchecked < 1000 and len(pq): #terminal condition
+        while nchecked < self._max_states and len(pq): #terminal condition
             next = pq.pop()
             next_state = next.state
             compressed = next_state.compressed
@@ -179,7 +180,7 @@ class AIPlayer(Player):
         loader = get_loader(dataset)
 
         criterion = nn.MSELoss()
-        optimizer = optim.SGD(self._model.parameters(), lr=0.1, momentum=0.9)
+        optimizer = optim.SGD(self._model.parameters(), lr=0.001, momentum=0.9)
 
         for ep in range(1):
             for i, data in enumerate(loader, 0):
