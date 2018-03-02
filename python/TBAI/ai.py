@@ -139,9 +139,9 @@ class AIPlayer(Player):
             for new_node in new_nodes:
                 pq.add(new_node)
             nchecked += 1
-        print('Checked %d states' % nchecked)
-        # PENDING: train on training nodes
-        print('%d states left for training' % len(player_info.training_nodes))
+        # TODO: re add prints
+        #print('Checked %d states' % nchecked)
+        #print('%d states left for training' % len(player_info.training_nodes))
 
         X = []
         Y = []
@@ -167,8 +167,8 @@ class AIPlayer(Player):
         # PENDING: add randomness
         best_node = None
         for node in root.children:
-            print(node.value, node._self_value)
-            print(node.state.toString())
+            #print(node.value, node._self_value # TODO re add
+            #print(node.state.toString()) # TODO re add
             if not best_node or (node.value - best_node.value) * (2*state.player_turn - 1) > 0:
                 best_node = node
 
@@ -188,8 +188,8 @@ class AIPlayer(Player):
                 inputs, labels = data['x'], data['y']
                 inputs = Variable(inputs)
                 labels = Variable(labels)
-                print('inputs: ', inputs)
-                print('labels: ', labels)
+                #print('inputs: ', inputs)
+                #print('labels: ', labels)
 
                 # wrap them in Variable
                 #inputs, labels = Variable(torch.from_numpy(inputs)), Variable(torch.from_numpy(labels))
