@@ -46,7 +46,7 @@ Training heuristic:
 
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
-    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100, training_iterations=0):
+    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100, train_iterations=0):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
@@ -66,7 +66,7 @@ class AIPlayer(Player):
         #TODO: use architecture to initialize model
         #self.initialize_model()
         self._model = model
-        self.training_iterations = training_iterations
+        self.train_iterations = train_iterations
 
     def heur(self, state, train=True):
         '''Heuristic estimate of win probability.
@@ -181,7 +181,7 @@ class AIPlayer(Player):
         criterion = nn.MSELoss()
         optimizer = optim.SGD(self._model.parameters(), lr=0.001, momentum=0.9)
 
-        for ep in range(self.training_iterations):
+        for ep in range(self.train_iterations):
             print('training iteration: ', ep)
             for i, data in enumerate(loader, 0):
                 # get the inputs
