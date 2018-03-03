@@ -157,8 +157,8 @@ class TicTacToeGame(Game):
             return
 
         while self._state.checkVictory() < 0:
-            print('current victor: ', self._state.checkVictory())
             if display:
+                print('current victor: ', self._state.checkVictory())
                 print('\n\n\n')
                 print(self._state.toString())
             player = self._players[self._state.player_turn]
@@ -168,11 +168,12 @@ class TicTacToeGame(Game):
                 self._state = self._state.enactMove(move)
 
         victor = self._state.checkVictory()
-        if victor == 0.5:
-            print('Tie!\n\n')
-        else:
-            print('Player %d won!\n\n' % victor)
-        print(self._state.toString())
+        if display:
+            if victor == 0.5:
+                print('Tie!\n\n')
+            else:
+                print('Player %d won!\n\n' % victor)
+            print(self._state.toString())
 
     def _verifyKey(self, key):
         true_key = self._players[self._state.player_turn]

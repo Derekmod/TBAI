@@ -42,14 +42,11 @@ Training heuristic:
     At termination:
         order the list of training nodes (by how surprising they are and how probable they are)
         use the most surprising examples as training points for the network
-Training protocol:
-    ?
-
 '''
 
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
-    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100):
+    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100, training_iterations=0):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
@@ -69,6 +66,7 @@ class AIPlayer(Player):
         #TODO: use architecture to initialize model
         #self.initialize_model()
         self._model = model
+        self.training_iterations = training_iterations
 
     def heur(self, state, train=True):
         '''Heuristic estimate of win probability.
@@ -142,21 +140,23 @@ class AIPlayer(Player):
         #print('Checked %d states' % nchecked)
         #print('%d states left for training' % len(player_info.training_nodes))
 
-        X = []
-        Y = []
-        while len(player_info.training_nodes):
-            _, training_state, value, err = player_info.training_nodes.pop()
-            #value = node._expected_value
-            #err = (node._expected_value - node._self_value) ** 2
+
+        if self.training_iterations:
+            X = []
+            Y = []
+            while len(player_info.training_nodes):
+                _, training_state, value, err = player_info.training_nodes.pop()
+                #value = node._expected_value
+                #err = (node._expected_value - node._self_value) ** 2
             
-            x = training_state.features()
-            y = np.array([value, err])
+                x = training_state.features()
+                y = np.array([value, err])
 
-            X += [x]
-            Y += [y]
+                X += [x]
+                Y += [y]
 
-        if self._model:
-            self.train(X, Y)
+            if self._model:
+                self.train(X, Y)
 
         #cleanNode(root)
         #for child in root.children:
@@ -181,7 +181,8 @@ class AIPlayer(Player):
         criterion = nn.MSELoss()
         optimizer = optim.SGD(self._model.parameters(), lr=0.001, momentum=0.9)
 
-        for ep in range(1):
+        for ep in range(self.training_iterations):
+            print('training iteration: ', ep)
             for i, data in enumerate(loader, 0):
                 # get the inputs
                 inputs, labels = data['x'], data['y']

@@ -6,17 +6,19 @@ from tictactoe_ai import TicTacToeNet
 
 model = TicTacToeNet()
 player1 = AIPlayer(0, lambda x: x, model=model, max_states=1000)
+player1.train_iterations = 1000
 #player1 = Player()
 #player2 = Player()
 player2 = HumanTicTacToePlayer()
 
-for _ in range(10000):
+for _ in range(1):
     training_game = TicTacToeGame()
     training_game.registerPlayer(player1)
     training_game.registerPlayer(player1)
-    training_game.start()
+    training_game.start(display=False)
 
 player1._max_states = 10
+player1.train_iterations = 0
 
 for _ in range(1000):
     game = TicTacToeGame()

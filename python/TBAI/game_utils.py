@@ -1,24 +1,25 @@
 import random
 import string
 import numpy as np
+import copy
 
 
 class Player(object):
-    def __init__(self, id_length=8, data=None):
-        self._id = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
-                           for _ in range(id_length))
-        
+    '''Plays turn-base games.'''
+    def __init__(self, data=None):        
         self._data = data
         if self._data is None:
             self._data = {}
 
     def getMove(self, game_state):
+        '''Primary method - makes a move.
+        Args:
+            game_state <GameState>: current state
+        Returns:
+            <Move>: move the player would like to enact
+        '''
         moves = game_state.moves
         return random.choice(moves)
-
-    @property
-    def id(self):
-        return self._id
 
     @property
     def data(self):
@@ -26,6 +27,7 @@ class Player(object):
 
 
 class GameState(object):
+    '''Encodes the current state of a game. '''
     def __init__(self):
         self._turn_order = [0, 1]
         self._turn_idx = 0
@@ -39,12 +41,18 @@ class GameState(object):
         return []
 
     def enactMove(self, move):
-        '''
-        Returns a new state.
-        '''
-        return None
+        '''Returns a new state.'''
+        new_state = copy.deepcopy(self)
+        new_state._turn_idx += 1
+        return new_state
 
     def checkVictory(self):
+        '''Checks if game is over.
+        Returns:
+            winner (0 or 1) if there is one
+            0.5 if tie
+            -1 if game ongoing
+        '''
         return -1
     
     def features(self):
@@ -59,12 +67,20 @@ class GameState(object):
 
 
 class Game(object):
+    '''Responsible for faithfully running a Game.'''
     def __init__(self):
         self._player_keys = []
         self._players = []
         self._player_dict = dict()
 
+        self._state = GameState()
+
     def registerPlayer(self, player, key_length=12):
+        '''Adds 'player' to game, in order
+        Args:
+            player <Player>: player to add
+            key_length <int>: access key for the player (for limited information games)
+        '''
         self._players += [player]
         key = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
                            for _ in range(key_length))
@@ -72,8 +88,36 @@ class Game(object):
         return key
 
     def getState(self, player_key):
-        pass
+        return self._state
 
     @property
     def num_players(self):
         return len(self._players)
+
+    def start(self, display=True):
+        '''Play the game until completion.'''
+        if self.num_players < 2:
+            print('ERROR: not enough players')
+            return
+
+        while self._state.checkVictory() < 0:
+            self.turn(display)
+
+        victor = self._state.checkVictory()
+        if victor == 0.5:
+            print('Tie!\n\n')
+        else:
+            print('Player %d won!\n\n' % victor)
+        print(self._state.toString())
+
+    def turn(self, display=True):
+        '''Play one turn (without safety checks).'''
+        if display:
+            print('current victor: ', self._state.checkVictory())
+            print('\n\n\n')
+            print(self._state.toString())
+            print(move.coords)
+        player = self._players[self._state.player_turn]
+        move = player.getMove(self._state)
+        if self._verifyKey(move.player_key) or True: #TODO use key
+            self._state = self._state.enactMove(move)
