@@ -141,7 +141,7 @@ class AIPlayer(Player):
         #print('%d states left for training' % len(player_info.training_nodes))
 
 
-        if self.training_iterations:
+        if self.train_iterations:
             X = []
             Y = []
             while len(player_info.training_nodes):

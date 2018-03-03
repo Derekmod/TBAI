@@ -163,7 +163,8 @@ class TicTacToeGame(Game):
                 print(self._state.toString())
             player = self._players[self._state.player_turn]
             move = player.getMove(self._state)
-            print(move.coords)
+            if display:
+                print(move.coords)
             if self._verifyKey(move.player_key) or True: #TODO use key
                 self._state = self._state.enactMove(move)
 
