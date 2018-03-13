@@ -32,6 +32,9 @@ if __name__ == '__main__':
             training_game.registerPlayer(player1)
             training_game.registerPlayer(player1)
             training_game.start(display=False)
+
+            if args.save:
+                model.save(args.save)
     else:
         player2 = HumanTicTacToePlayer()
 

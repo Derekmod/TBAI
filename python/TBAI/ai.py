@@ -182,7 +182,7 @@ class AIPlayer(Player):
         optimizer = optim.SGD(self._model.parameters(), lr=0.001, momentum=0.9)
 
         for ep in range(self.train_iterations):
-            print('training iteration: ', ep)
+            #print('training iteration: ', ep)
             for i, data in enumerate(loader, 0):
                 # get the inputs
                 inputs, labels = data['x'], data['y']
