@@ -34,7 +34,7 @@ if __name__ == '__main__':
             training_game.start(display=False)
 
             if args.save:
-                model.save(args.save)
+                torch.save(model, args.save)
     else:
         player2 = HumanTicTacToePlayer()
 
