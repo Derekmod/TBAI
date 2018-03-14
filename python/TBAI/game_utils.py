@@ -119,5 +119,5 @@ class Game(object):
             print(move)
         player = self._players[self._state.player_turn]
         move = player.getMove(self._state)
-        if self._verifyKey(move.player_key) or True: #TODO use key
+        if True or self._verifyKey(move.player_key): #TODO use key
             self._state = self._state.enactMove(move)
