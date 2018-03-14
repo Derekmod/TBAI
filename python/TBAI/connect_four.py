@@ -39,7 +39,7 @@ class ConnectFourGameState(GameState):
 
     def checkVictory(self):
         for col in range(CONNECT_FOUR_COLS):
-            for row in len(self._position[col]):
+            for row in range(len(self._position[col])):
                 for dx, dy in ((-1,1), (0,1), (1,1), (1,0)):
                     vals = []
                     for step in range(4):
