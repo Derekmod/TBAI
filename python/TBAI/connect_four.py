@@ -26,7 +26,7 @@ class ConnectFourGameState(GameState):
         return moves
 
     def enactMove(self, move):
-        row, col = move.coords
+        col = move
         if len(self._position[col]) >= CONNECT_FOUR_ROWS:
             print('ERROR: location already filled')
             exit()
