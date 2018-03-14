@@ -52,6 +52,7 @@ class ConnectFourGameState(GameState):
                     if len(vals) < 4:
                         continue
                     if max(vals) == min(vals):
+                        print(vals)
                         return vals[0]
 
         if self._turn_idx >= CONNECT_FOUR_COLS * CONNECT_FOUR_ROWS:
