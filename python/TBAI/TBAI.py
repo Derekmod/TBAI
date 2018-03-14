@@ -57,9 +57,9 @@ if __name__ == '__main__':
 
         game = gametype()
         if args.human_turn == 0:
-            player1.key = game.registerPlayer(human)
-            player2.key = game.registerPlayer(ai)
+            game.registerPlayer(human)
+            game.registerPlayer(ai)
         else:
-            player1.key = game.registerPlayer(ai)
-            player2.key = game.registerPlayer(human)
+            game.registerPlayer(ai)
+            game.registerPlayer(human)
         game.start()
