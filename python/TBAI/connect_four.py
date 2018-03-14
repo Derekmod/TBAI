@@ -21,7 +21,7 @@ class ConnectFourGameState(GameState):
         moves = []
         for col in range(CONNECT_FOUR_COLS):
             if len(self._position[col]) < CONNECT_FOUR_ROWS:
-                moves += col
+                moves += [col]
 
         return moves
 
