@@ -116,7 +116,7 @@ class Game(object):
             print('current victor: ', self._state.checkVictory())
             print('\n\n\n')
             print(self._state.toString())
-            print(move.coords)
+            print(move)
         player = self._players[self._state.player_turn]
         move = player.getMove(self._state)
         if self._verifyKey(move.player_key) or True: #TODO use key
