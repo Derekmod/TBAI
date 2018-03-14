@@ -41,6 +41,7 @@ class ConnectFourGameState(GameState):
         for col in range(CONNECT_FOUR_COLS):
             for row in range(len(self._position[col])):
                 for dx, dy in ((-1,1), (0,1), (1,1), (1,0)):
+                    print('reset vals')
                     vals = []
                     for step in range(4):
                         tcol, trow = col+dx, row+dy
@@ -48,6 +49,7 @@ class ConnectFourGameState(GameState):
                             break
                         if trow < 0 or trow >= len(self._position[tcol]):
                             break
+                        print('vals += %d at (%d,%d)' % (self._position[tcol][trow], tcol, trow))
                         vals += [ self._position[tcol][trow] ]
                     if len(vals) < 4:
                         continue
