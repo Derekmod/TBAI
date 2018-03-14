@@ -64,7 +64,7 @@ class ConnectFourGameState(GameState):
         for row in range(CONNECT_FOUR_ROWS-1,-1,-1):
             for col in range(CONNECT_FOUR_COLS):
                 if row >= len(self._position[col]):
-                    ret += '  '
+                    ret += '. '
                 if self._position[col][row] == 0:
                     ret += 'O '
                 else:
@@ -73,8 +73,14 @@ class ConnectFourGameState(GameState):
         return ret
 
     def features(self):
-        # TODO: implement
-        pass
+        feature_list = []
+        for col in range(CONNECT_FOUR_COLS):
+            for row in range(CONNECT_FOUR_ROWS):
+                if row >= len(self._position[col]):
+                    feature_list += [0]
+                else:
+                    feature_list += [2*self._position[col][row] - 1]
+        return np.array(feature_list).astype(float)
 
     def recalcCompressed(self):
         self._compressed = tuple([tuple(self._position[col]) for col in range(CONNECT_FOUR_COLS)])

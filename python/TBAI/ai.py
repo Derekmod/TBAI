@@ -79,22 +79,15 @@ class AIPlayer(Player):
         victor = state.checkVictory()
         if victor >= 0:
             return (float(victor), 0)
-        features = self._feature_extractor(state)
-        features = torch.from_numpy(state.features())
-        features = features.type(torch.FloatTensor)
-        features = Variable(features)
-        #print('features: ' + str(features))
-        # PENDING: use neural net
         if self._model:
+            features = self._feature_extractor(state)
+            features = torch.from_numpy(state.features())
+            features = features.type(torch.FloatTensor)
+            features = Variable(features)
             ret = self._model.forward(features)
-            #print(ret)
-            #print(ret[0])
-            #print(ret[1])
-            #print(ret.tolist())
-            #return ret
             return ret.data[0], ret.data[1]
         else:
-            return (0.5, self._max_uncertainty)
+            return 0.5, self._max_uncertainty
 
     def getMove(self, state):
         '''Make the AI make a move.
