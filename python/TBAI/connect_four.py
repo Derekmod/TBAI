@@ -65,7 +65,7 @@ class ConnectFourGameState(GameState):
             for col in range(CONNECT_FOUR_COLS):
                 if row >= len(self._position[col]):
                     ret += '. '
-                if self._position[col][row] == 0:
+                elif self._position[col][row] == 0:
                     ret += 'O '
                 else:
                     ret += 'X '
