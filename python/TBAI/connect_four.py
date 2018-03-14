@@ -41,7 +41,7 @@ class ConnectFourGameState(GameState):
         for col in range(CONNECT_FOUR_COLS):
             for row in range(len(self._position[col])):
                 for dx, dy in ((-1,1), (0,1), (1,1), (1,0)):
-                    print('reset vals')
+                    print('reset vals, (dx,dy) = (%d,%d)' % (dx, dy))
                     vals = []
                     for step in range(4):
                         tcol, trow = col+dx, row+dy
