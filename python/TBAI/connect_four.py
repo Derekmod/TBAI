@@ -48,7 +48,7 @@ class ConnectFourGameState(GameState):
                             break
                         if trow < 0 or trow >= len(self._position[tcol]):
                             break
-                        vals += self._position[tcol][trow]
+                        vals += [ self._position[tcol][trow] ]
                     if len(vals) < 4:
                         continue
                     if max(vals) == min(vals):
