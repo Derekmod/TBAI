@@ -46,7 +46,7 @@ class ConnectFourGameState(GameState):
                         tcol, trow = col+dx, row+dy
                         if tcol < 0 or tcol >= CONNECT_FOUR_COLS:
                             break
-                        if trow < 0 or trow >= len(self._position(tcol)):
+                        if trow < 0 or trow >= len(self._position[tcol]):
                             break
                         vals += self._position[tcol][trow]
                     if len(vals) < 4:
