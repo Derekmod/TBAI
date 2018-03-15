@@ -80,10 +80,8 @@ class AIPlayer(Player):
         if victor >= 0:
             return (float(victor), 0)
         if self._model:
-            features = self._feature_extractor(state)
-            features = torch.from_numpy(state.features())
-            features = features.type(torch.FloatTensor)
-            features = Variable(features)
+            #features = self._feature_extractor(state)
+            features = [Variable(torch.from_numpy(var).type(torch.FloatTensor)) for var in state.features()]
             ret = self._model.forward(features)
             return ret.data[0], ret.data[1]
         else:

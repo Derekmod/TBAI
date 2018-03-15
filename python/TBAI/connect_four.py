@@ -78,15 +78,22 @@ class ConnectFourGameState(GameState):
     def features(self):
         feature_list = []
         for col in range(CONNECT_FOUR_COLS):
+            feature_list += [[]]
             for row in range(CONNECT_FOUR_ROWS):
                 if row >= len(self._position[col]):
-                    feature_list += [0]
+                    feature_list[-1] += [0]
                 else:
-                    feature_list += [2*self._position[col][row] - 1]
-        return np.array(feature_list).astype(float)
+                    feature_list[-1] += [2*self._position[col][row] - 1]
+
+        state_vals = [self.player_turn, self._turn_idx]
+        return np.array(feature_list).astype(float), np.array(state_vals)
 
     def recalcCompressed(self):
-        self._compressed = tuple([tuple(self._position[col]) for col in range(CONNECT_FOUR_COLS)])
+        col_states = [tuple(self._position[col]) for col in range(CONNECT_FOUR_COLS)]
+        cmp1 = tuple(col_states)
+        col_states.reverse()
+        cmp2 = tuple(col_states)
+        self._compressed = min(cmp1, cmp2)
 
     @property
     def compressed(self):

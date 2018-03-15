@@ -81,17 +81,19 @@ class TicTacToeGameState(GameState):
         return '\n'.join(['\t'.join([str(self._position[row][col]) for col in range(3)]) for row in range(3)])
 
     def features(self):
-        flist = [self.player_turn]
+        flist = []
         for row in range(3):
+            flist += [[]]
             for col in range(3):
                 val = self._position[row][col]
                 if val < 0:
-                    flist += [0]
+                    flist[-1] += [0]
                 elif val == 0:
-                    flist += [-1]
+                    flist[-1] += [-1]
                 else:
-                    flist += [1]
-        return np.array(flist).astype(float)
+                    flist[-1] += [1]
+        state_vals = [self.player_turn, self._turn_idx]
+        return np.array(flist).astype(float), np.array(state_vals)
 
     def recalcCompressed(self):
         features = self._position[0] + self._position[1] + self._position[2]

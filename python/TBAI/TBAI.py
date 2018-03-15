@@ -4,6 +4,7 @@ from game_utils import Player
 from ai import AIPlayer
 
 from tictactoe_ai import TicTacToeNet
+from connect_four_ai import ConnectFourNet
 import torch
 
 import argparse
@@ -33,7 +34,7 @@ if __name__ == '__main__':
         gametype = TicTacToeGame
         humantype = HumanTicTacToePlayer
     elif args.game == 'C4':
-        model = None
+        model = ConnectFourNet()
         gametype = ConnectFourGame
         humantype = HumanConnectFourPlayer
 
