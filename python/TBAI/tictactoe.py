@@ -4,7 +4,6 @@ import numpy as np
 import sys
 
 import torch
-from torch.autograd import Variable
 
 class TicTacToeGameState(GameState):
     def __init__(self):
@@ -98,7 +97,7 @@ class TicTacToeGameState(GameState):
         state_vals = [self.player_turn, self._turn_idx]
 
         ret = np.array(flist).astype(float), np.array(state_vals).astype(float)
-        ret = [Variable(torch.from_numpy(val).type(torch.FloatTensor)) for val in ret]
+        ret = [torch.from_numpy(val).type(torch.FloatTensor) for val in ret]
         return ret
 
     def recalcCompressed(self):
