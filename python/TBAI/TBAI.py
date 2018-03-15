@@ -45,11 +45,12 @@ if __name__ == '__main__':
 
     if args.train:
         ai.train_iterations = args.nepochs
-        for _ in range(args.ngames):
+        for game_num in range(args.ngames):
             training_game = gametype()
             training_game.registerPlayer(ai)
             training_game.registerPlayer(ai)
             training_game.start(display=False)
+            print('finished %d games' % (game_num+1))
 
             if args.save:
                 torch.save(model, args.save)

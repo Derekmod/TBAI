@@ -1,7 +1,7 @@
 import random
 import string
-import numpy as np
 import copy
+import torch
 
 
 class Player(object):
@@ -56,7 +56,12 @@ class GameState(object):
         return -1
     
     def features(self):
-        return np.array([])
+        ''' PyTorch interpretable features of the game state.
+        Returns:
+            [FloatTensor]: suggested form:
+                [public state,] simple globals,] hidden_info]
+        '''
+        return [torch.FloatTensor([]), torch.FloatTensor([self.player_turn, self._turn_idx])]
 
     @property
     def compressed(self):
@@ -87,7 +92,7 @@ class Game(object):
         self._player_dict[key] = player
         return key
 
-    def getState(self, player_key):
+    def getState(self, player_key=None):
         return self._state
 
     @property
@@ -104,20 +109,19 @@ class Game(object):
             self.turn(display)
 
         victor = self._state.checkVictory()
-        if victor == 0.5:
-            print('Tie!\n\n')
-        else:
-            print('Player %d won!\n\n' % victor)
-        print(self._state.toString())
+        if display:
+            if victor == 0.5:
+                print('Tie!\n\n')
+            else:
+                print('Player %d won!\n\n' % victor)
+            print(self._state.toString())
 
     def turn(self, display=True):
         '''Play one turn (without safety checks).'''
         if display:
-            print('current victor: ', self._state.checkVictory())
             print('\n\n\n')
             print(self._state.toString())
-            print(move)
+            print('Player %d turn:' % self._state.player_turn)
         player = self._players[self._state.player_turn]
         move = player.getMove(self._state)
-        if True or self._verifyKey(move.player_key): #TODO use key
-            self._state = self._state.enactMove(move)
+        self._state = self._state.enactMove(move)

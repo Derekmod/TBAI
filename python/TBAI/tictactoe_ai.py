@@ -19,6 +19,16 @@ class TicTacToeNet(nn.Module):
         self.fc3 = nn.Linear(self.state_size + self.fc1_size + self.fc2_size, 2)
 
     def forward(self, bundle):
+        ''' Heuristic function.
+        Args:
+            bundle (Variable):
+                position <FloatTensor>: any x 3x3, board position
+                state_vals <FloatTensor>: any x 2, player_turn and turn_idx
+        Returns:
+            <FloatTensor> any x 2: each group has values:
+                probability of winning
+                expected error
+        '''
         x, state_vals = bundle
         flat_x = x.view(-1, self.position_size)
         state_vals = state_vals.view(-1, self.state_size)

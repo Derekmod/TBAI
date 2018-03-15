@@ -83,6 +83,12 @@ class TicTacToeGameState(GameState):
         return '\n'.join(['\t'.join([str(self._position[row][col]) for col in range(3)]) for row in range(3)])
 
     def features(self):
+        ''' PyTorch interpretable features of the game state.
+        Returns:
+            [FloatTensor]:
+                board position
+                [player_turn, turn_idx]
+        '''
         flist = []
         for row in range(3):
             flist += [[]]
