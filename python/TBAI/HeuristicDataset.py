@@ -38,11 +38,14 @@ def tuple_collate(batch):
         for i in range(k):
             trans[i] += [el]
 
-    ret= [default_collate(feat_batch) for feat_batch in trans]
-    print(ret[0])
+    ret = [default_collate(feat_batch) for feat_batch in trans]
     return ret
 
 def TBAI_collate(batch):
     X = tuple_collate([sample['x'] for sample in batch])
     Y = default_collate([sample['y'] for sample in batch])
+
+    print([x.shape for x in X])
+    print(Y.shape)
+
     return {'x':X, 'y':Y}
