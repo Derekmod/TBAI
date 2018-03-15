@@ -41,7 +41,7 @@ def tuple_collate(batch):
 
     ret = []
     for feat_batch in trans:
-        print('feature batch', feat_back)
+        print('feature batch', feat_batch)
         ret += [ torch.stack(feat_batch, 0) ]
     print('new ret', ret)
     return ret
