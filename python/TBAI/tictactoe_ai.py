@@ -20,7 +20,7 @@ class TicTacToeNet(nn.Module):
 
     def forward(self, bundle):
         x, state_vals = bundle
-        flat_x = x.view(-1, self.position_size)
+        flat_x = x.view(-1)
         print(x.shape)
         print(state_vals.shape)
         print(flat_x.shape)
