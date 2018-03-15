@@ -82,7 +82,7 @@ class AIPlayer(Player):
         if self._model:
             #features = self._feature_extractor(state)
             #features = [Variable(torch.from_numpy(var).type(torch.FloatTensor)) for var in state.features()]
-            features = state.features()
+            features = [Variable(var) for var in state.features()]
             ret = self._model.forward(features)
             return ret.data[0], ret.data[1]
         else:
