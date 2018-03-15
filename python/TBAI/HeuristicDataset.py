@@ -32,10 +32,13 @@ def get_loader(dataset):
                       collate_fn=tuple_collate)
 
 def tuple_collate(batch):
+    print(batch)
     k = len(batch[0])
     trans = [[] for _ in range(k)]
     for el in batch:
         for i in range(k):
             trans[i] += [el]
 
-    return [default_collate(feat_batch) for feat_batch in trans]
+    ret= [default_collate(feat_batch) for feat_batch in trans]
+    print(ret)
+    return ret
