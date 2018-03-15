@@ -32,7 +32,7 @@ def get_loader(dataset):
                       collate_fn=TBAI_collate)
 
 def tuple_collate(batch):
-    print('batch[0]', batch[0])
+    #print('batch[0]', batch[0])
     k = len(batch[0])
     trans = [[] for _ in range(k)]
     for el in batch:
@@ -41,16 +41,16 @@ def tuple_collate(batch):
 
     ret = []
     for feat_batch in trans:
-        print('feature batch', feat_batch)
+        #print('feature batch', feat_batch)
         ret += [ torch.stack(feat_batch, 0) ]
-    print('new ret', ret)
+    #print('new ret', ret)
     return ret
 
 def TBAI_collate(batch):
     X = tuple_collate([sample['x'] for sample in batch])
     Y = torch.stack([sample['y'] for sample in batch], 0)
 
-    print([x.shape for x in X])
-    print(Y.shape)
+    #print([x.shape for x in X])
+    #print(Y.shape)
 
     return {'x':X, 'y':Y}
