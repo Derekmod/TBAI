@@ -26,13 +26,13 @@ class TicTacToeNet(nn.Module):
         print('flat_x shape:', flat_x.shape)
         print('state_vals shape:', state_vals.shape)
 
-        inp1 = torch.cat((state_vals, flat_x), 0)
+        inp1 = torch.cat((state_vals, flat_x), 1)
         out1 = F.relu(self.fc1(inp1))
 
-        inp2 = torch.cat((state_vals, out1), 0)
+        inp2 = torch.cat((state_vals, out1), 1)
         out2 = F.relu(self.fc2(inp2))
 
-        inp3 = torch.cat((state_vals, out1, out2), 0)
+        inp3 = torch.cat((state_vals, out1, out2), 1)
         out3 = F.relu(self.fc3(inp3))
 
         y = F.sigmoid(out3)
