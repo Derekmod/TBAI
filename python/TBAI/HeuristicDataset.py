@@ -50,7 +50,7 @@ def TBAI_collate(batch):
     X = tuple_collate([sample['x'] for sample in batch])
     Y = torch.stack([sample['y'] for sample in batch], 0)
 
-    #print([x.shape for x in X])
+    print('x shapes:', [x.shape for x in X])
     #print(Y.shape)
 
     return {'x':X, 'y':Y}
