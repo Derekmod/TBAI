@@ -39,9 +39,9 @@ def tuple_collate(batch):
         for i in range(k):
             trans[i] += [el]
 
-    ret = [default_collate(feat_batch) for feat_batch in trans]
-    print('first ret', ret)
-    ret = default_collate(trans)
+    ret = []
+    for feat_batch in trans:
+        ret += [ torch.stack(feat_batch, 0) ]
     print('new ret', ret)
     return ret
 
