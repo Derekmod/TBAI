@@ -2,6 +2,8 @@ from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 import torch
 
+from torch.utils.data.dataloader import default_collate
+
 
 class HeuristicDataset(Dataset):
     def __init__(self, X, Y):
@@ -26,4 +28,14 @@ class HeuristicDataset(Dataset):
 
 def get_loader(dataset):
     return DataLoader(dataset, batch_size=4,
-                      shuffle=False, num_workers=1)
+                      shuffle=False, num_workers=1,
+                      collate_fn=tuple_collate)
+
+def tuple_collate(batch):
+    k = len(batch[0])
+    trans = [[] for _ in range(k)]
+    for el in batch:
+        for i in range(k):
+            trans[i] += [el]
+
+    return [default_collate(feat_batch) for feat_batch in trans]
