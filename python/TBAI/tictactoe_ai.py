@@ -21,6 +21,9 @@ class TicTacToeNet(nn.Module):
     def forward(self, bundle):
         x, state_vals = bundle
         flat_x = x.view(-1, self.position_size)
+        print(x.shape)
+        print(state_vals.shape)
+        print(flat_x.shape)
 
         inp1 = torch.cat((state_vals, flat_x), 0)
         out1 = F.relu(self.fc1(inp1))

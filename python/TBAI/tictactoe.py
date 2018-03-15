@@ -93,7 +93,7 @@ class TicTacToeGameState(GameState):
                 else:
                     flist[-1] += [1]
         state_vals = [self.player_turn, self._turn_idx]
-        return np.array(flist).astype(float), np.array(state_vals)
+        return np.array(flist).astype(float), np.array(state_vals).astype(float)
 
     def recalcCompressed(self):
         features = self._position[0] + self._position[1] + self._position[2]
