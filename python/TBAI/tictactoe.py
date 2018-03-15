@@ -95,8 +95,9 @@ class TicTacToeGameState(GameState):
                 else:
                     flist[-1] += [1]
         state_vals = [self.player_turn, self._turn_idx]
+
         ret = np.array(flist).astype(float), np.array(state_vals).astype(float)
-        ret = [torch.from_numpy(val).type(torch.FloatTensor) for val in ret]
+        ret = [Variable(torch.from_numpy(val).type(torch.FloatTensor)) for val in ret]
         return ret
 
     def recalcCompressed(self):
