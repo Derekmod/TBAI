@@ -29,7 +29,7 @@ class HeuristicDataset(Dataset):
 def get_loader(dataset):
     return DataLoader(dataset, batch_size=4,
                       shuffle=False, num_workers=1,
-                      collate_fn=tuple_collate)
+                      collate_fn=TBAI_collate)
 
 def tuple_collate(batch):
     print([type(item) for item in batch])
@@ -41,3 +41,8 @@ def tuple_collate(batch):
 
     ret= [default_collate(feat_batch) for feat_batch in trans]
     return ret
+
+def TBAI_collate(batch):
+    X = tuple_collate([sample['x'] for sample in batch])
+    Y = default_collate([sample['y'] for sample in batch])
+    return {'x':X, 'y':Y}
