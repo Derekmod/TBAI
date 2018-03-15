@@ -4,6 +4,7 @@ import numpy as np
 import sys
 
 import torch
+from torch.autograd import Variable
 
 class TicTacToeGameState(GameState):
     def __init__(self):

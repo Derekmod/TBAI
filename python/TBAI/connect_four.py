@@ -3,6 +3,9 @@ import copy
 import numpy as np
 import sys
 
+import torch
+from torch.autograd import Variable
+
 
 CONNECT_FOUR_ROWS = 6
 CONNECT_FOUR_COLS = 7
