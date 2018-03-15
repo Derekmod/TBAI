@@ -37,7 +37,7 @@ def tuple_collate(batch):
     trans = [[] for _ in range(k)]
     for el in batch:
         for i in range(k):
-            trans[i] += [el]
+            trans[i] += [el[i]]
 
     ret = []
     for feat_batch in trans:
