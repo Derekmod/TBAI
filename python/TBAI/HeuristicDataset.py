@@ -32,7 +32,6 @@ def get_loader(dataset):
                       collate_fn=TBAI_collate)
 
 def tuple_collate(batch):
-    print([type(item) for item in batch])
     k = len(batch[0])
     trans = [[] for _ in range(k)]
     for el in batch:
@@ -40,6 +39,7 @@ def tuple_collate(batch):
             trans[i] += [el]
 
     ret= [default_collate(feat_batch) for feat_batch in trans]
+    print(ret[0])
     return ret
 
 def TBAI_collate(batch):
