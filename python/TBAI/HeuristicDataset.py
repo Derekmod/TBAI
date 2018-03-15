@@ -13,13 +13,13 @@ class HeuristicDataset(Dataset):
 
     def __getitem__(self, idx):
         x = self.X[idx]
-        x = torch.from_numpy(x)
-        x = x.type(torch.FloatTensor)
+        #x = torch.from_numpy(x)
+        #x = x.type(torch.FloatTensor)
         #x = Variable(x)
 
         y = self.Y[idx]
-        y = torch.from_numpy(y)
-        y = y.type(torch.FloatTensor)
+        #y = torch.from_numpy(y)
+        #y = y.type(torch.FloatTensor)
         #y = Variable(y)
         return {'x': x, 'y': y}
 

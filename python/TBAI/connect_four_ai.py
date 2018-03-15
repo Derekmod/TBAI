@@ -31,7 +31,7 @@ class ConnectFourNet(nn.Module):
         conv_val = F.relu(F.max_pool2d(self.conv1(x), 2))
         conv_val = self.batch_norm1(conv_val)
         #conv_val = self.dropout(conv_val)
-        flat_conv_val = conv_val.view(-1, self.conv1_size)
+        flat_conv_val = conv_val.view(-1)
 
         fc1_inp = torch.cat((state, flat_conv_val), 0)
         fc1_val = F.relu(self.fc1(fc1_inp))

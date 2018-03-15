@@ -86,7 +86,10 @@ class ConnectFourGameState(GameState):
                     feature_list[-1] += [2*self._position[col][row] - 1]
 
         state_vals = [self.player_turn, self._turn_idx]
-        return np.array(feature_list).astype(float), np.array(state_vals)
+
+        ret = np.array(feature_list).astype(float), np.array(state_vals)
+        ret = [torch.from_numpy(val).type(torch.FloatTensor) for val in ret]
+        return ret
 
     def recalcCompressed(self):
         col_states = [tuple(self._position[col]) for col in range(CONNECT_FOUR_COLS)]

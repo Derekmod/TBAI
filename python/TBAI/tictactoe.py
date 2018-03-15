@@ -3,6 +3,8 @@ import copy
 import numpy as np
 import sys
 
+import torch
+
 class TicTacToeGameState(GameState):
     def __init__(self):
         GameState.__init__(self)
@@ -93,7 +95,9 @@ class TicTacToeGameState(GameState):
                 else:
                     flist[-1] += [1]
         state_vals = [self.player_turn, self._turn_idx]
-        return np.array(flist).astype(float), np.array(state_vals).astype(float)
+        ret = np.array(flist).astype(float), np.array(state_vals).astype(float)
+        ret = [torch.from_numpy(val).type(torch.FloatTensor) for val in ret]
+        return ret
 
     def recalcCompressed(self):
         features = self._position[0] + self._position[1] + self._position[2]
