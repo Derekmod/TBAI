@@ -44,7 +44,7 @@ if __name__ == '__main__':
     ai = AIPlayer(0, lambda x: x, model, max_states=args.max_states)
 
     if args.train:
-        player1.train_iterations = args.nepochs
+        ai.train_iterations = args.nepochs
         for _ in range(args.ngames):
             training_game = gametype()
             training_game.registerPlayer(ai)
