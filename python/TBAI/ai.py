@@ -63,8 +63,6 @@ class AIPlayer(Player):
         self._max_uncertainty = max_uncertainty
         self._max_states = max_states
 
-        #TODO: use architecture to initialize model
-        #self.initialize_model()
         self._model = model
         self.train_iterations = train_iterations
 
@@ -84,7 +82,7 @@ class AIPlayer(Player):
             #features = [Variable(torch.from_numpy(var).type(torch.FloatTensor)) for var in state.features()]
             features = [Variable(var) for var in state.features()]
             ret = self._model.forward(features)
-            return ret.data[0], ret.data[1]
+            return ret.data[0][0], ret.data[0][1]
         else:
             return 0.5, self._max_uncertainty
 
