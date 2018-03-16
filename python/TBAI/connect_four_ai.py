@@ -37,13 +37,13 @@ class ConnectFourNet(nn.Module):
         #conv_val = self.dropout(conv_val)
         flat_conv_val = conv_val.view(-1, self.conv1_size)
 
-        fc1_inp = torch.cat((state, flat_conv_val), 0)
+        fc1_inp = torch.cat((state, flat_conv_val), 1)
         fc1_val = F.relu(self.fc1(fc1_inp))
         
-        fc2_inp = torch.cat((state, fc1_val), 0)
+        fc2_inp = torch.cat((state, fc1_val), 1)
         fc2_val = F.relu(self.fc2(fc2_inp))
 
-        final_inp = torch.cat((state, flat_position, flat_conv_val, fc1_val, fc2_val), 0)
+        final_inp = torch.cat((state, flat_position, flat_conv_val, fc1_val, fc2_val), 1)
         final = F.sigmoid(self.fc_out(final_inp))
 
         return final
