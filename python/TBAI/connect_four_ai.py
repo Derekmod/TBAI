@@ -28,7 +28,6 @@ class ConnectFourNet(nn.Module):
     def forward(self, bundle):
         position, state = bundle
         position = position.view(-1, 1, 7, 6)
-        print(position.shape)
         flat_position = position.view(-1, 42)
         state = state.view(-1, 2)
 
