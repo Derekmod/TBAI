@@ -12,7 +12,7 @@ class ConnectFourNet(nn.Module):
         self.feature_size = 42
         self.state_size = 2
 
-        self.conv1 = nn.Conv2d(1, 20, 3)
+        self.conv1 = nn.Conv2d(1, 20, 3, padding=1)
         self.batch_norm1 = nn.BatchNorm2d(20)
         #self.dropout1 = nn.Dropout2D(p=0.1)
         self.conv1_size = 20*4*5
