@@ -15,7 +15,7 @@ class ConnectFourNet(nn.Module):
         self.conv1 = nn.Conv2d(1, 20, 3, padding=1, stride=(1,1))
         self.batch_norm1 = nn.BatchNorm2d(20)
         #self.dropout1 = nn.Dropout2D(p=0.1)
-        self.conv1_size = 20*4*5
+        self.conv1_size = 180
         
         self.fc1_size = 80
         self.fc1 = nn.Linear(self.state_size + self.conv1_size, self.fc1_size)
