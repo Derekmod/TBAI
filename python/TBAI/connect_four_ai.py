@@ -8,7 +8,7 @@ from torch.autograd import Variable
 
 class ConnectFourNet(nn.Module):
     def __init__(self):
-        super(TicTacToeNet, self).__init__()
+        super(ConnectFourNet, self).__init__()
         self.feature_size = 42
         self.state_size = 2
 
