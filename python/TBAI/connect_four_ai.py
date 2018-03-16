@@ -12,7 +12,7 @@ class ConnectFourNet(nn.Module):
         self.feature_size = 42
         self.state_size = 2
 
-        self.conv1 = nn.Conv2d(1, 20, 3, padding=1, dilation=0)
+        self.conv1 = nn.Conv2d(1, 20, 3, padding=1, stride=(1,1))
         self.batch_norm1 = nn.BatchNorm2d(20)
         #self.dropout1 = nn.Dropout2D(p=0.1)
         self.conv1_size = 20*4*5
@@ -28,6 +28,7 @@ class ConnectFourNet(nn.Module):
     def forward(self, bundle):
         position, state = bundle
         position = position.view(-1, 1, 7, 6)
+        print(position.shape)
         flat_position = position.view(-1, 42)
         state = state.view(-1, 2)
 
