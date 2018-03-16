@@ -168,7 +168,7 @@ class AIPlayer(Player):
             uprobs += [get_uprob(get_utility(node.value, state.player_turn), player_info)]
 
         if self.train_iterations > 0:
-            prob_scale = random.uniform() * sum(uprobs)
+            prob_scale = random.uniform(0, sum(uprobs))
             for i in range(len(uprobs)):
                 prob_scale -= uprobs[i]
                 if prob_scale <= 0:
