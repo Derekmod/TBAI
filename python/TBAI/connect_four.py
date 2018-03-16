@@ -17,7 +17,7 @@ class ConnectFourGameState(GameState):
         self._turn_order = [0, 1]
 
         self._position = [[] for _ in range(7)]
-        self.recalcCompressed()
+        self._recalcCompressed()
 
     @property
     def moves(self):
@@ -37,7 +37,7 @@ class ConnectFourGameState(GameState):
         new_state = copy.deepcopy(self)
         new_state._position[col] += [self.player_turn]
         new_state._turn_idx += 1
-        new_state.recalcCompressed()
+        new_state._recalcCompressed()
         return new_state
 
     def checkVictory(self):
@@ -94,7 +94,7 @@ class ConnectFourGameState(GameState):
         ret = [torch.from_numpy(val).type(torch.FloatTensor) for val in ret]
         return ret
 
-    def recalcCompressed(self):
+    def _recalcCompressed(self):
         col_states = [tuple(self._position[col]) for col in range(CONNECT_FOUR_COLS)]
         cmp1 = tuple(col_states)
         col_states.reverse()
@@ -132,33 +132,4 @@ class HumanConnectFourPlayer(Player):
 class ConnectFourGame(Game):
     def __init__(self):
         Game.__init__(self)
-        #self.super()
-
         self._state = ConnectFourGameState()
-
-    def start(self, display=True):
-        if self.num_players < 2:
-            print('ERROR: not enough players')
-            return
-
-        while self._state.checkVictory() < 0:
-            print('current victor: ', self._state.checkVictory())
-            if display:
-                print('\n\n\n')
-                print(self._state.toString())
-            player = self._players[self._state.player_turn]
-            move = player.getMove(self._state)
-            print(move)
-            if True or self._verifyKey(move.player_key): #TODO use key
-                self._state = self._state.enactMove(move)
-
-        victor = self._state.checkVictory()
-        if victor == 0.5:
-            print('Tie!\n\n')
-        else:
-            print('Player %d won!\n\n' % victor)
-        print(self._state.toString())
-
-    def _verifyKey(self, key):
-        true_key = self._players[self._state.player_turn]
-        return true_key == key

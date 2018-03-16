@@ -11,7 +11,7 @@ class TicTacToeGameState(GameState):
         self._turn_order = [0, 1]
 
         self._position = [[-1]*3 for _ in range(3)]
-        self.recalcCompressed()
+        self._recalcCompressed()
 
     @property
     def moves(self):
@@ -32,7 +32,7 @@ class TicTacToeGameState(GameState):
         new_state = copy.deepcopy(self)
         new_state._position[row][col] = self.player_turn
         new_state._turn_idx += 1
-        new_state.recalcCompressed()
+        new_state._recalcCompressed()
         return new_state
 
     def checkVictory(self):
@@ -106,9 +106,8 @@ class TicTacToeGameState(GameState):
         ret = [torch.from_numpy(val).type(torch.FloatTensor) for val in ret]
         return ret
 
-    def recalcCompressed(self):
+    def _recalcCompressed(self):
         features = self._position[0] + self._position[1] + self._position[2]
-        #print(features
 
         self._compressed = min([sum([features[order[i]]*POWERS_OF_THREE[i] for i in range(9)]) for order in TIC_TAC_TOE_ORDERINGS])
 
@@ -160,35 +159,4 @@ class HumanTicTacToePlayer(Player):
 class TicTacToeGame(Game):
     def __init__(self):
         Game.__init__(self)
-        #self.super()
-
         self._state = TicTacToeGameState()
-
-    def start(self, display=True):
-        if self.num_players < 2:
-            print('ERROR: not enough players')
-            return
-
-        while self._state.checkVictory() < 0:
-            if display:
-                print('current victor: ', self._state.checkVictory())
-                print('\n\n\n')
-                print(self._state.toString())
-            player = self._players[self._state.player_turn]
-            move = player.getMove(self._state)
-            if display:
-                print(move.coords)
-            if True or self._verifyKey(move.player_key): #TODO use key
-                self._state = self._state.enactMove(move)
-
-        victor = self._state.checkVictory()
-        if display:
-            if victor == 0.5:
-                print('Tie!\n\n')
-            else:
-                print('Player %d won!\n\n' % victor)
-            print(self._state.toString())
-
-    def _verifyKey(self, key):
-        true_key = self._players[self._state.player_turn]
-        return true_key == key

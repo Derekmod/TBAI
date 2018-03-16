@@ -125,3 +125,7 @@ class Game(object):
         player = self._players[self._state.player_turn]
         move = player.getMove(self._state)
         self._state = self._state.enactMove(move)
+
+    def _verifyKey(self, key):
+        true_key = self._players[self._state.player_turn]
+        return true_key == key
