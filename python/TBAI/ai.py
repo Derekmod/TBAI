@@ -12,6 +12,7 @@ from torch.autograd import Variable
 
 import numpy as np
 import math
+import random
 
 '''PENDING
 Stronger priority
@@ -155,11 +156,23 @@ class AIPlayer(Player):
         # find best move
         # PENDING: add randomness
         best_node = None
+        moves = []
+        uprobs = []
         for node in root.children:
             #print(node.value, node._self_value # TODO re add
             #print(node.state.toString()) # TODO re add
             if not best_node or (node.value - best_node.value) * (2*state.player_turn - 1) > 0:
                 best_node = node
+
+            moves += [node.move]
+            uprobs += [get_uprob(get_utility(node.value, state.player_turn), player_info)]
+
+        if self.train_iterations > 0:
+            prob_scale = random.uniform() * sum(uprobs)
+            for i in range(len(uprobs)):
+                prob_scale -= uprobs[i]
+                if prob_scale <= 0:
+                    return moves[i]
 
         #return state.moves[0] #TEMP
         return best_node.move
