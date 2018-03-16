@@ -31,7 +31,7 @@ class ConnectFourNet(nn.Module):
         flat_position = position.view(-1, 42)
         state = state.view(-1, 2)
 
-        conv_val = F.relu(F.max_pool2d(self.conv1(x), 2))
+        conv_val = F.relu(F.max_pool2d(self.conv1(position), 2))
         conv_val = self.batch_norm1(conv_val)
         #conv_val = self.dropout(conv_val)
         flat_conv_val = conv_val.view(-1, self.conv1_size)
