@@ -143,3 +143,12 @@ class PriorityQueue(object):
 
     def __len__(self):
         return self._size
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self._size:
+            return self.pop()
+        else:
+            raise StopIteration

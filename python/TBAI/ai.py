@@ -47,7 +47,8 @@ Training heuristic:
 
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
-    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100, train_iterations=0):
+    def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100, train_iterations=0,
+                 recalc_power=1.1, qinv=1):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
@@ -66,6 +67,8 @@ class AIPlayer(Player):
 
         self._model = model
         self.train_iterations = train_iterations
+        self._recalc_power = recalc_power
+        self.qinv = qinv
 
     def heur(self, state, train=True):
         '''Heuristic estimate of win probability.
@@ -94,19 +97,21 @@ class AIPlayer(Player):
         Returns:
             <Move> in the move_list of 'state'
         '''
-        hash_fn = lambda node: 0 #TODO remove
-        value_fn = lambda node: node.depth #TODO strengthen
+        hash_fn = lambda node: node.state.compressed #TODO remove
+        value_fn = lambda node: node._global_log_prob #TODO strengthen
         pq = PriorityQueue(hash_fn, value_fn)
 
         player_info = PlayerInfo(turn = state.player_turn,
                                  prob_power = 0.1,
-                                 max_uncertainty = self._max_uncertainty)
+                                 max_uncertainty = self._max_uncertainty,
+                                 q=1./self.qinv)
         root = StateNode(state, player_info)
         pq.add(root)
 
         redundant = dict()
 
         nchecked = 0
+        next_recalc = 1
         while nchecked < self._max_states and len(pq): #terminal condition
             next = pq.pop()
             next_state = next.state
@@ -127,6 +132,17 @@ class AIPlayer(Player):
             for new_node in new_nodes:
                 pq.add(new_node)
             nchecked += 1
+
+            if nchecked >= next_recalc:
+                # PENDING: recalculate probabilities and uncertainties
+                cleanNode(root, set())
+
+                pq_old = pq
+                pq = PriorityQueue(hash_fn, value_fn)
+                for node in pq_old:
+                    pq.add(node)
+
+                next_recalc = int(next_recalc * self._recalc_power + 1)
         # TODO: re add prints
         #print('Checked %d states' % nchecked)
         #print('%d states left for training' % len(player_info.training_nodes))
@@ -213,15 +229,26 @@ class AIPlayer(Player):
                 #          (epoch + 1, i + 1, running_loss / 2000))
                 #    running_loss = 0.0
 
-def cleanNode(node):
-    p_novel = node.recalcValue(verbose=False)
-    if p_novel != 0.:
-        print(node.state.toString())
-        print('npending:', len(node._pending_moves))
-        asdlfja = 1/0
+def cleanNode(node, cleaned):
+    key = node.state.compressed
+    if key in cleaned:
+        return
+    cleaned.add(key)
+
+    if not node._parents:
+        node._global_log_prob = 0.
+    else:
+        node._global_log_prob = log_sum([parent._global_log_prob + math.log(parent._child_uprobs[key]) - math.log(parent._prob_scale)
+                                         for parent in node._parents])
+    
     for child in node.children:
         if child.children:
-            cleanNode(child)
+            cleanNode(child, cleaned)
+
+    node.recalcValue(propogate=False)
+
+    # TODO: recalc value
+    # TODO: recalc uncertainty
 
 
 class StateNode(object):
@@ -246,8 +273,10 @@ class StateNode(object):
         '''
         self._state = state
         self._parents = set()
+        self._global_log_prob = 0.
         if parent:
             self._parents.add(parent)
+            self._global_log_prob = parent._global_log_prob - math.log(parent._max_children)
         self._parent = parent
         self._move = move
         
@@ -280,6 +309,7 @@ class StateNode(object):
         self._reported_value = heur_val
         self._expected_value = heur_val
         self._uncertainty = uncertainty
+        self._total_uncertainty = uncertainty
 
         # TODO: get (unscaled) choice prob
         #parent_utility = get_utility(self._self_value, self.parent.state.player_turn)
@@ -373,7 +403,7 @@ class StateNode(object):
             original.addParent(parent)
         return self._parent._addChild()
 
-    def recalcValue(self, verbose=False):
+    def recalcValue(self, verbose=False, propogate=True):
         '''Recalculates expected value.
         If changed, tells parent to recalculate.
         '''
@@ -398,7 +428,7 @@ class StateNode(object):
         if surprise > 1e-10:
             self._player_info.training_nodes.addNoDuplicate((surprise, self.state, self._expected_value, err))
 
-        if self._parents and surprise > 1e-9:
+        if self._parents and surprise > 1e-9 and propogate:
             self._reported_value = self._expected_value
             # FUTURE make condition smarter
             for parent in self._parents:
@@ -415,6 +445,10 @@ class StateNode(object):
         #self._reported_value = self._expected_value
         #return self._reported_value
         return self._expected_value
+
+    @property
+    def uncertainty(self):
+        return self._total_uncertainty
 
     @property
     def depth(self):
@@ -438,7 +472,7 @@ def get_uprob(utility, player_info):
 
 class PlayerInfo(object):
     '''Stores player info.'''
-    def __init__(self, turn=0, prob_power=1., max_uncertainty=1., training_nodes=None, utility_cap=1e-1):
+    def __init__(self, turn=0, prob_power=1., max_uncertainty=1., training_nodes=None, utility_cap=1e-1, q=0.5):
         self.turn = turn
         self.prob_power = prob_power
         self.max_uncertainty = max_uncertainty
@@ -446,3 +480,29 @@ class PlayerInfo(object):
         if self.training_nodes is None:
             self.training_nodes = PriorityQueue(lambda x: x[1].compressed, lambda x: x[0]) # TODO: implement max items
         self.utility_cap = utility_cap
+        self.q = q
+
+def qlog(x, q=0.):
+    q = float(q)
+    if q == 0.:
+        return math.log(x)
+    return (x ** q - 1.) / q
+
+def qexp(x, q=0.):
+    q = float(q)
+    if q == 0.:
+        return math.exp(x)
+    return (1. + q*x) ** (1./q)
+
+def qlogit(p, q=0.):
+    return qlog(p, q) - qlog(1.-p, q)
+
+def qsigmoid(x, q=0.):
+    return qexp(x, q) / (qexp(x, q) + qexp(-x, q) )
+
+def log_sum(values):
+    sum = values[0]
+    for v in values[1:]:
+        sup = max(sum, v)
+        inf = min(sum, v)
+        sum = sup + math.log(1 + math.exp(inf - sup))
