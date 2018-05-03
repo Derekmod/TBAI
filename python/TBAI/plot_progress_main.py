@@ -75,6 +75,7 @@ if __name__ == '__main__':
                 game.registerPlayer(ref_ai)
             winner = game.start(display=False)
             nwins += abs(1.-turn - winner)
+            print('finished game')
         winrates += [nwins / float(ngames)]
         print('finished ep: %d', ep)
 
