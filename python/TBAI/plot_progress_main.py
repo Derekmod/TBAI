@@ -63,7 +63,7 @@ if __name__ == '__main__':
         model = torch.load(os.path.join(args.dir, 'model_{}.dat'.format(ep) ) )
         test_ai = AIPlayer(model=model, max_states=args.max_states)
         nwins = 0.
-        ngames = 100
+        ngames = 10
         for sample in range(ngames):
             game = gametype()
             turn = sample % 2
