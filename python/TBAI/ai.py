@@ -235,6 +235,9 @@ def cleanNode(node, cleaned):
         return
     cleaned.add(key)
 
+    if not node._checked:
+        return
+
     if not node._parents:
         node._global_log_prob = 0.
     else:
