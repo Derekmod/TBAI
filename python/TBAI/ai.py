@@ -296,7 +296,8 @@ class StateNode(object):
         self._global_log_prob = 0.
         if parent:
             self._parents.add(parent)
-            self._global_log_prob = parent._global_log_prob - math.log(parent._max_children)
+            self._global_log_prob = parent._global_log_prob
+            self._global_log_prob -= math.log(parent._max_children)
         self._parent = parent
         self._move = move
         
