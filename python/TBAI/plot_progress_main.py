@@ -79,10 +79,10 @@ if __name__ == '__main__':
         winrates += [nwins / float(ngames)]
         print('finished ep: %d, winrate=%f' % (ep, winrates[-1]))
 
-    for i in range(eps):
-        print('%d,%f' % (eps[i], winrates[i]))
+    #for i in range(eps):
+    #    print('%d,%f' % (eps[i], winrates[i]))
     stream = open(args.results_fn, 'w')
-    for i in range(eps):
+    for i in range(len(eps)):
         stream.write('%d,%f\n' % (eps[i], winrates[i]))
 
 
