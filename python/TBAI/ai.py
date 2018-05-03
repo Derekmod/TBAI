@@ -300,6 +300,9 @@ class StateNode(object):
                 print('STATENODE HAS NO GLOBAL LOG PROB:')
                 print(parent.state.toString())
             self._global_log_prob = parent._global_log_prob - math.log(parent._max_children)
+        else:
+            print('STATENODE HAS NO PARENT:')
+            print(state.toString())
         self._parent = parent
         self._move = move
         
