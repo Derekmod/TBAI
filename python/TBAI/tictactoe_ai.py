@@ -24,12 +24,12 @@ class TicTacToeNet(nn.Module):
 
         fc2_inp_size = self.fc1_size
         if self.pass_through:
-            fc2_inp_size += self.position_size
+            fc2_inp_size += self.state_size
         self.fc2 = nn.Linear(fc2_inp_size, self.fc2_size)
 
         fco_inp_size = self.fc2_size
         if self.sideways:
-            fco_inp_size += self.state_size + self.fc1_size + self.fc2_size
+            fco_inp_size += self.state_size + self.position_size + self.fc1_size
         elif self.pass_through:
             fco_inp_size += self.state_size
         self.fc3 = nn.Linear(fco_inp_size, 2)
