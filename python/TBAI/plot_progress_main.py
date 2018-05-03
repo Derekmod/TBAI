@@ -76,6 +76,7 @@ if __name__ == '__main__':
             winner = game.start(display=False)
             nwins += abs(1.-turn - winner)
         winrates += [nwins / float(ngames)]
+        print('finished ep: %d', ep)
 
     for i in range(eps):
         print('%d,%f' % (eps[i], winrates[i]))
