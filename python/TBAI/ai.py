@@ -13,6 +13,7 @@ from torch.autograd import Variable
 import numpy as np
 import math
 import random
+from asyncio import Queue
 
 '''PENDING
 Stronger priority
@@ -135,7 +136,15 @@ class AIPlayer(Player):
 
             if nchecked >= next_recalc:
                 # PENDING: recalculate probabilities and uncertainties
-                cleanNode(root, set())
+                cleaned = set()
+                unclean = Queue()
+                unclean.put_nowait(root)
+
+                while len(unclean):
+                    next = unclean.get_nowait()
+                    added = cleanNode(next, cleaned)
+                    for node in added:
+                        unclean.put_nowait(node)
 
                 pq_old = pq
                 pq = PriorityQueue(hash_fn, value_fn)
@@ -232,17 +241,19 @@ class AIPlayer(Player):
 def cleanNode(node, cleaned):
     key = node.state.compressed
     if key in cleaned:
-        return
+        return []
     cleaned.add(key)
 
     if not node._checked:
-        return
+        return []
 
     if not node._parents:
         node._global_log_prob = 0.
     else:
         l = []
         for parent in node._parents:
+            if parent.state.compressed not in cleaned:
+                return [node]
             v = 0.
             v += parent._global_log_prob
             v += math.log(parent._child_uprobs[key])
@@ -252,11 +263,9 @@ def cleanNode(node, cleaned):
         #                                 for parent in node._parents])
         node._global_log_prob = log_sum(l)
     
-    for child in node.children:
-        if child.children:
-            cleanNode(child, cleaned)
+    return node.children
 
-    node.recalcValue(propogate=False)
+    #node.recalcValue(propogate=False)
 
     # TODO: recalc value
     # TODO: recalc uncertainty
