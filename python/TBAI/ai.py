@@ -296,13 +296,13 @@ class StateNode(object):
         self._global_log_prob = 0.
         if parent:
             self._parents.add(parent)
-            if parent._global_log_prob is None:
-                print('STATENODE HAS NO GLOBAL LOG PROB:')
-                print(parent.state.toString())
+            #if parent._global_log_prob is None:
+            #    print('STATENODE HAS NO GLOBAL LOG PROB:')
+            #    print(parent.state.toString())
             self._global_log_prob = parent._global_log_prob - math.log(parent._max_children)
-        else:
-            print('STATENODE HAS NO PARENT:')
-            print(state.toString())
+        #else:
+        #    print('STATENODE HAS NO PARENT:')
+        #    print(state.toString())
         self._parent = parent
         self._move = move
         
@@ -321,9 +321,9 @@ class StateNode(object):
 
         self._pending_moves = []
 
-        if self._global_log_prob is None:
-            print('CURRENT STATENODE HAS NO LOG PROB:')
-            print(state.toString())
+        #if self._global_log_prob is None:
+        #    print('CURRENT STATENODE HAS NO LOG PROB:')
+        #    print(state.toString())
 
     def check(self, heur_bundle):
         '''Gives a node a heuristic value.
