@@ -21,6 +21,7 @@ parser.add_argument("--dir", help="directory of nets", type=str)
 parser.add_argument("--max-states", type=int, help="max # of states to search", default=100)
 parser.add_argument("--human-turn", type=int, help="turn order of human (0 or 1)", default=1)
 parser.add_argument("--game", type=str, help="ttt, C4", default='ttt')
+parser.add_argument("--results-fn", type=str, help="name of results file", default="results.csv")
 #parser.add_argument("--pass-through", type=bool, help="pass-through neural net?", default=False)
 #parser.add_argument("--sideways-net", type=bool, help="sideways neural net?", default=False)
 #parser.add_argument("--ref-pass-through", type=bool, help="pass-through neural net?", default=False)
@@ -78,6 +79,10 @@ if __name__ == '__main__':
 
     for i in range(eps):
         print('%d,%f' % (eps[i], winrates[i]))
+    stream = open(args.results_fn, 'w')
+    for i in range(eps):
+        stream.write('%d,%f\n' % (eps[i], winrates[i]))
+
 
     plt.plot(eps, winrates)
     plt.show()
