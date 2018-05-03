@@ -1,5 +1,5 @@
 import os
-import matplotlit.pyplot as plt
+import matplotlib.pyplot as plt
 
 from tictactoe import TicTacToeGame, HumanTicTacToePlayer
 from connect_four import ConnectFourGame, HumanConnectFourPlayer
