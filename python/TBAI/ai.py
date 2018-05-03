@@ -139,8 +139,8 @@ class AIPlayer(Player):
 
                 pq_old = pq
                 pq = PriorityQueue(hash_fn, value_fn)
-                for node in pq_old:
-                    pq.add(node)
+                while len(pq_old):
+                    pq.add(pq_old.pop())
 
                 next_recalc = int(next_recalc * self._recalc_power + 1)
         # TODO: re add prints
