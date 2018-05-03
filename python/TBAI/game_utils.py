@@ -115,6 +115,8 @@ class Game(object):
             else:
                 print('Player %d won!\n\n' % victor)
             print(self._state.toString())
+        
+        return victor
 
     def turn(self, display=True):
         '''Play one turn (without safety checks).'''
