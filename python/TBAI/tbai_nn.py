@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import torch
+import torch.nn.functional as F
 
 
 def gameActivation(input):
@@ -9,12 +10,12 @@ def gameActivation(input):
     # apply softmax to u
 
     splits = input.split(1,1)
-    print(splits)
+    #print(splits)
     #left, right = input.split(2, 1)
 
     left, right = splits[0], splits[1]
 
     value = torch.sigmoid(left)
-    uncertainty = torch.softplus(right)
+    uncertainty = F.softplus(right)
 
     return torch.cat((value, uncertainty), 1)
