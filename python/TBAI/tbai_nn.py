@@ -8,7 +8,7 @@ def gameActivation(input):
     # apply sigmoid to v
     # apply softmax to u
 
-    splits = input.split(2,1)
+    splits = input.split(1,1)
     print(splits)
     #left, right = input.split(2, 1)
 
