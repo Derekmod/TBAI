@@ -536,3 +536,4 @@ def log_sum(values):
         sup = max(sum, v)
         inf = min(sum, v)
         sum = sup + math.log(1 + math.exp(inf - sup))
+    return sum
