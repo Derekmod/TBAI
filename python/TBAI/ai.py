@@ -241,8 +241,16 @@ def cleanNode(node, cleaned):
     if not node._parents:
         node._global_log_prob = 0.
     else:
-        node._global_log_prob = log_sum([parent._global_log_prob + math.log(parent._child_uprobs[key]) - math.log(parent._prob_scale)
-                                         for parent in node._parents])
+        l = []
+        for parent in node._parents:
+            v = 0.
+            v += parent._global_log_prob
+            v += math.log(parent._child_uprobs[key])
+            v -= math.log(parent._prob_scale)
+            l += [v]
+        #node._global_log_prob = log_sum([parent._global_log_prob + math.log(parent._child_uprobs[key]) - math.log(parent._prob_scale)
+        #                                 for parent in node._parents])
+        node._global_log_prob = log_sum(l)
     
     for child in node.children:
         if child.children:
