@@ -140,7 +140,7 @@ class AIPlayer(Player):
                 unclean = Queue()
                 unclean.put_nowait(root)
 
-                while len(unclean):
+                while unclean.qsize:
                     next = unclean.get_nowait()
                     added = cleanNode(next, cleaned)
                     for node in added:
