@@ -22,6 +22,7 @@ parser.add_argument("--max-states", type=int, help="max # of states to search", 
 parser.add_argument("--human-turn", type=int, help="turn order of human (0 or 1)", default=1)
 parser.add_argument("--game", type=str, help="ttt, C4", default='ttt')
 parser.add_argument("--results-fn", type=str, help="name of results file", default="results.csv")
+parser.add_argument("--sample-games", type=int, help="number of games each AI plays to determine winrate", default=10)
 #parser.add_argument("--pass-through", type=bool, help="pass-through neural net?", default=False)
 #parser.add_argument("--sideways-net", type=bool, help="sideways neural net?", default=False)
 #parser.add_argument("--ref-pass-through", type=bool, help="pass-through neural net?", default=False)
@@ -63,7 +64,7 @@ if __name__ == '__main__':
         model = torch.load(os.path.join(args.dir, 'model_{}.dat'.format(ep) ) )
         test_ai = AIPlayer(model=model, max_states=args.max_states)
         nwins = 0.
-        ngames = 10
+        ngames = args.sample_games
         for sample in range(ngames):
             game = gametype()
             turn = sample % 2
