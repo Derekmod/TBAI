@@ -39,7 +39,7 @@ if __name__ == '__main__':
                              sideways_net=args.sideways_net)
         gametype = TicTacToeGame
         humantype = HumanTicTacToePlayer
-    elif args.game == 'C4':
+    elif args.game == 'C4' or args.game == 'c4':
         model = ConnectFourNet(pass_through_states=args.pass_through,
                                sideways_net=args.sideways_net)
         gametype = ConnectFourGame
