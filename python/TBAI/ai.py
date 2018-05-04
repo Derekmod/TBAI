@@ -99,7 +99,8 @@ class AIPlayer(Player):
             <Move> in the move_list of 'state'
         '''
         hash_fn = lambda node: node.state.compressed #TODO remove
-        value_fn = lambda node: node._global_log_prob #TODO strengthen
+        #value_fn = lambda node: node._global_log_prob #TODO strengthen
+        value_fn = lambda node: node.depth
         pq = PriorityQueue(hash_fn, value_fn)
 
         player_info = PlayerInfo(turn = state.player_turn,
