@@ -46,7 +46,8 @@ class TicTacToeNet(nn.Module):
                 expected error
         '''
         x, state_vals = bundle
-        flat_x = x.view(-1, self.position_size)
+        #flat_x = x.view(-1, self.position_size)
+        flat_x = x.view(-1, 9)
         state_vals = state_vals.view(-1, self.state_size)
 
         inp1 = torch.cat((state_vals, flat_x), 1)
