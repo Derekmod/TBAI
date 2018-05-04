@@ -70,9 +70,9 @@ class ConnectFourNet(nn.Module):
 
         final_inp = fc2_val
         if self.sideways:
-            torch.cat((state, flat_position, flat_conv_val, fc1_val, final_inp), 1)
+            final_inp = torch.cat((state, flat_position, flat_conv_val, fc1_val, final_inp), 1)
         elif self.pass_through:
-            torch.cat((state, final_inp), 1)
+            final_inp = torch.cat((state, final_inp), 1)
         #final = F.sigmoid(self.fc_out(final_inp))
         final = gameActivation(self.fc_out(final_inp))
 
