@@ -228,10 +228,12 @@ class AIPlayer(Player):
 
                 # forward + backward + optimize
                 outputs = self._model.forward(inputs)
-                print(outputs, labels, loss)
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
+                
+                print(outputs, labels, loss)
+
 
                 # print statistics
                 #running_loss += loss.data[0]
