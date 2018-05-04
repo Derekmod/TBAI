@@ -232,7 +232,7 @@ class AIPlayer(Player):
                 loss.backward()
                 optimizer.step()
                 
-                print(outputs, labels, loss)
+                print('TRAIN:', outputs, labels, loss)
 
 
                 # print statistics
