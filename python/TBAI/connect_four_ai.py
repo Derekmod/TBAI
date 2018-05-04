@@ -47,7 +47,7 @@ class ConnectFourNet(nn.Module):
         self.feature_size = 42
         self.state_size = 2
         self.pass_through = True
-        self.sideways = False
+        self.sideways = True
         position, state = bundle
         position = position.view(-1, 1, 7, 6)
         flat_position = position.view(-1, 42)
