@@ -216,7 +216,7 @@ class AIPlayer(Player):
                 best_node = node
 
             moves += [node.move]
-            uprobs += [get_uprob(get_utility(node.value, state.player_turn), node.uncertainty, player_info)]
+            uprobs += [get_uprob(get_utility(node.value, state.player_turn), node.uncertainty, player_info.q)]
 
         if self.train_iterations > 0:
             prob_scale = random.uniform(0, sum(uprobs))
@@ -425,7 +425,7 @@ class StateNode(object):
         value = child._expected_value
         self._child_values[compressed] = value
         uprob = get_uprob(get_utility(value, self.state.player_turn),
-                          self._player_info)
+                          q=self._player_info.q)
         self._child_uprobs[compressed] = uprob
         self._prob_scale += uprob
 
@@ -438,7 +438,7 @@ class StateNode(object):
         self._child_values[key] = value
         self._prob_scale -= self._child_uprobs[key]
         uprob = get_uprob(get_utility(value, self.state.player_turn),
-                                            self._player_info)
+                                            q=self._player_info.q)
         self._child_uprobs[key] = uprob
         self._prob_scale += uprob
 
@@ -523,7 +523,7 @@ def get_utility(value, player_turn):
     sign = 2*player_turn - 1
     return sign*value + 1 - player_turn
 
-def get_uprob(utility, uncertainty, q=-1.):
+def get_uprob(utility, uncertainty=0, q=-1.):
     if utility <= 0.:
         return 0.
     #return (utility + 0.05) ** player_info.prob_power
