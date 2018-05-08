@@ -167,7 +167,7 @@ class AIPlayer(Player):
         while len(active_indices):
             for slave_idx in active_indices:
                 try:
-                    obj = pipes[slave_idx].recv()
+                    obj = slave_pipes[slave_idx].recv()
                     if not obj:
                         active_indices.remove(slave_idx)
                         continue
