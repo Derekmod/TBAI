@@ -12,6 +12,7 @@ from torch.autograd import Variable
 
 import numpy as np
 import math
+from qmath import *
 import random
 from asyncio import Queue
 
@@ -49,7 +50,7 @@ Training heuristic:
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
     def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100, train_iterations=0,
-                 recalc_power=1.1, qinv=1):
+                 recalc_power=1.1, q_choice=1):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
@@ -69,7 +70,7 @@ class AIPlayer(Player):
         self._model = model
         self.train_iterations = train_iterations
         self._recalc_power = recalc_power
-        self.qinv = qinv
+        self.q_choice = q_choice
 
     def heur(self, state, train=True):
         '''Heuristic estimate of win probability.
@@ -106,7 +107,7 @@ class AIPlayer(Player):
         player_info = PlayerInfo(turn = state.player_turn,
                                  prob_power = 0.1,
                                  max_uncertainty = self._max_uncertainty,
-                                 q=1./self.qinv)
+                                 q=self.q_choice)
         root = StateNode(state, player_info)
         pq.add(root)
 
@@ -116,7 +117,9 @@ class AIPlayer(Player):
         next_recalc = 1
         while nchecked < self._max_states and len(pq): #terminal condition
             next = pq.pop()
+            #parent, move_list = root.pickLeaf()
             next_state = next.state
+            #next_state = parent.state.enactMove(move_list[-1])
             compressed = next_state.compressed
             if compressed not in redundant:
                 redundant[compressed] = next
@@ -329,6 +332,29 @@ class StateNode(object):
         #    print('CURRENT STATENODE HAS NO LOG PROB:')
         #    print(state.toString())
 
+    def pickLeaf(self):
+        '''Randomly picks a leaf node.
+        Returns:
+            <StateNode>: parent of node picked
+            [Move]: list of moves to arrive at leaf from self.parent
+        '''
+        if not self._checked:
+            print('ERROR: PICKING UNCHECKED NODE')
+        if self._prob_scale < 1e-5 or random.uniform(0, 1) > float(len(self.children)) / self._max_children:
+            move = np.random.choice(self._pending_moves)
+            return self, [move]
+        
+        child = self.pickChild()
+        ret_node, move_list = child.pickLeaf()
+        return ret_node, [self._move] + move_list
+
+    def pickChild(self, randomize=True):
+        cplist = [(self._child_uprobs[child.state.compressed], child) for child in self.children]
+        if not randomize:
+            cplist.sort(reverse=True)
+            return cplist[0][1]
+        return stochasticChoice(cplist, self._prob_scale)
+
     def check(self, heur_bundle):
         '''Gives a node a heuristic value.
         Tells parent to update if there was significant change.
@@ -500,9 +526,34 @@ def get_utility(value, player_turn):
     sign = 2*player_turn - 1
     return sign*value + 1 - player_turn
 
-def get_uprob(utility, player_info):
+def get_uprob(utility, uncertainty, q=-1.):
     #return (utility + 0.05) ** player_info.prob_power
-    return (utility + player_info.utility_cap) / (1 + player_info.utility_cap - utility)
+    #return (utility + player_info.utility_cap) / (1 + player_info.utility_cap - utility)
+    return -qlog(1. - utility, q)
+
+def get_probs(utilities, uncertainties, est_val, max_children, player_info):
+    uprobs = []
+    sum_uprob = 0.
+    for i in range(len(utilities)):
+        utility = utilities[i]
+        uncertainty = uncertainties[i]
+
+        if utility == 1.:
+            probs = [0.] * max_children
+            probs[i] = 1.
+            return probs
+
+        uprob = get_uprob(utility, uncertainty, player_info.q)
+        uprobs += [uprob]
+        sum_uprob += uprob
+
+    probs = [uprob / sum_uprob * len(utilities) / max_children for uprob in uprobs]
+    probs += [1. - float(len(utiltiies)) / max_children ]
+
+    return probs
+
+
+    
 
 class PlayerInfo(object):
     '''Stores player info.'''
@@ -516,28 +567,12 @@ class PlayerInfo(object):
         self.utility_cap = utility_cap
         self.q = q
 
-def qlog(x, q=0.):
-    q = float(q)
-    if q == 0.:
-        return math.log(x)
-    return (x ** q - 1.) / q
 
-def qexp(x, q=0.):
-    q = float(q)
-    if q == 0.:
-        return math.exp(x)
-    return (1. + q*x) ** (1./q)
-
-def qlogit(p, q=0.):
-    return qlog(p, q) - qlog(1.-p, q)
-
-def qsigmoid(x, q=0.):
-    return qexp(x, q) / (qexp(x, q) + qexp(-x, q) )
-
-def log_sum(values):
-    sum = values[0]
-    for v in values[1:]:
-        sup = max(sum, v)
-        inf = min(sum, v)
-        sum = sup + math.log(1 + math.exp(inf - sup))
-    return sum
+def stochasticChoice(weighted_list, scale=1.):
+    z = random.uniform(0, scale)
+    for i in range(len(weighted_list)):
+        weight, item = weighted_list[i]
+        z -= weight
+        if z <= 0:
+            return item
+    print('ERROR: bad scale')
