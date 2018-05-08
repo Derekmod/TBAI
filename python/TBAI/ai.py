@@ -15,6 +15,7 @@ import numpy as np
 import math
 from qmath import *
 import random
+import copy
 #from asyncio import Queue
 from multiprocessing import Manager, Process, TimeoutError, Pipe
 
@@ -163,18 +164,18 @@ class AIPlayer(Player):
         for pipe in slave_pipes:
             pipe.send(None)
 
-        active_indices = range(nslaves)
-        while len(active_indices):
-            for slave_idx in active_indices:
+        active_pipes = copy.copy(slave_pipes)
+        while active_pipes:
+            for pipe in active_pipes:
                 try:
-                    obj = slave_pipes[slave_idx].recv()
+                    obj = pipe.recv()
                     if not obj:
-                        active_indices.remove(slave_idx)
+                        active_pipes.remove(pipe)
                         continue
                     heur_bundle, compressed = obj
                     redundant[compressed].check(heur_bundle)
                 except EOFError:
-                    active_indices.remove(slave_idx)
+                    pipes.remove(pipe)
 
 
 
