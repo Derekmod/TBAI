@@ -155,6 +155,8 @@ class AIPlayer(Player):
                         new_nodes = redundant[compressed].check(heur_bundle)
                         for new_node in new_nodes:
                             pq.add(new_node)
+                    except EOFError:
+                        print('ERROR: slave closed before master [E2]')
 
             nchecked += 1
 
