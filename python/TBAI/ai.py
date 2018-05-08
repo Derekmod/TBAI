@@ -94,7 +94,7 @@ class AIPlayer(Player):
         else:
             return 0.5, self._max_uncertainty
 
-    def getMove(self, state, nslaves=0):
+    def getMove(self, state, nslaves=1):
         '''Make the AI make a move.
         Args:
             state: <State>
