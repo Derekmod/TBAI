@@ -536,6 +536,7 @@ def get_probs(utilities, uncertainties, est_val, max_children, player_info):
     for i in range(len(utilities)):
         utility = utilities[i]
         uncertainty = uncertainties[i]
+        print(utility)
 
         if utility == 1.:
             probs = [0.] * max_children
