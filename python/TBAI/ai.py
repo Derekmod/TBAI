@@ -227,7 +227,7 @@ class AIPlayer(Player):
         while True:
             try:
                 state = pipe.recv()
-                if not obj:
+                if not state:
                     pipe.send(None)
                     return
                 heur_bundle = self.heur(state)
