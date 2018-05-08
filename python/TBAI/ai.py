@@ -119,7 +119,7 @@ class AIPlayer(Player):
         slave_pipes = []
         for pidx in range(nslaves):
             slave_pipe, pipe = Pipe()
-            proc = Process(target=AIPlayer.evalStates, args=(self, pipe,))
+            proc = Process(target=AIPlayer.evalStates, args=(self, pipe))
 
             slave_procs += [proc]
             slave_pipes += [slave_pipe]
@@ -223,105 +223,24 @@ class AIPlayer(Player):
         #return state.moves[0] #TEMP
         return best_node.move
 
-    def parallelGetMove(self, state, nprocesses=None):
-        '''Make the AI make a move.
-        Args:
-            state: <State>
-        Returns:
-            <Move> in the move_list of 'state'
-        '''
-        hash_fn = lambda node: node.state.compressed #TODO remove
-        #value_fn = lambda node: node._global_log_prob #TODO strengthen
-        value_fn = lambda node: node.depth
+    def evalStates(self, pipe):
+        while True:
+            try:
+                state = pipe.recv()
+                if not obj:
+                    pipe.send(None)
+                    return
+                heur_bundle = self.heur(state)
+                pipe.send( (heur_bundle, state.compressed) )
+            except EOFError:
+                pipe.send(None)
+                return
 
-        player_info = PlayerInfo(turn = state.player_turn,
-                                 prob_power = 0.1,
-                                 max_uncertainty = self._max_uncertainty,
-                                 q=self.q_choice)
-        root = StateNode(state, player_info)
-        pq.add(root)
-
-        with Manager() as manager:
-            shared_resources = dict()
-            shared_resources['tree_lock'] = manager.Lock()
-            shared_resources['active_nodes'] = manager.Queue()
-            shared_resources['node_count'] = manager.Value('i', 0)
-
-            #with Pool(processes=nprocesses) as pool:
-            procs = []
-            for pidx in range(nprocesses):
-                proc = Process(target=checkMoves, args=(self, root, shared_resources))
-                procs.append( proc )
-                proc.start()
-
-            for proc in procs:
-                proc.join()
 
         
 
         
 
-
-    def train(self, X, Y):
-        dataset = HeuristicDataset(X, Y)
-        loader = get_loader(dataset)
-
-        criterion = nn.MSELoss()
-        optimizer = optim.SGD(self._model.parameters(), lr=0.001, momentum=0.9)
-
-        for ep in range(self.train_iterations):
-            #print('training iteration: ', ep)
-            for i, data in enumerate(loader, 0):
-                # get the inputs
-                inputs, labels = data['x'], data['y']
-                inputs = [Variable(val) for val in inputs]
-                labels = Variable(labels)
-                #print('inputs: ', inputs)
-                #print('labels: ', labels)
-
-                # wrap them in Variable
-                #inputs, labels = Variable(torch.from_numpy(inputs)), Variable(torch.from_numpy(labels))
-
-                # zero the parameter gradients
-                optimizer.zero_grad()
-
-                # forward + backward + optimize
-                outputs = self._model.forward(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-                
-                #print('TRAIN:', outputs, labels, loss)
-
-
-                # print statistics
-                #running_loss += loss.data[0]
-                #if i % 2000 == 1999:    # print every 2000 mini-batches
-                #    print('[%d, %5d] loss: %.3f' %
-                #          (epoch + 1, i + 1, running_loss / 2000))
-                #    running_loss = 0.0
-
-    def checkStates(self, root, pipes):  # master function
-
-        while node_count.value < self._max_states:
-            node_count.value += 1
-
-            next = root.pickLeaf()
-            heur_bundle = self.heur(next.state)
-            active_nodes.put( (next, heur_bundle) )
-
-            if tree_lock.acquire(False):
-                while not active_nodes.empty():
-                    node, heur_bundle = active_nodes.pop()
-                    node.check(heur_bundle)
-                    tree_lock.release()
-            time.sleep(0.01)
-
-    def evalStates(self, pipe):  # slave function
-
-        while node_count.value < self._max_states:
-            if not unchecked_nodes.empty():
-                pass
 
 
 
