@@ -53,7 +53,7 @@ Training heuristic:
 class AIPlayer(Player):
     '''General intelligent player, uses A* minimax. '''
     def __init__(self, num_features=0, feature_extractor=None, model=None, max_uncertainty=8., max_states=100, train_iterations=0,
-                 recalc_power=1.1, q_choice=1):
+                 recalc_power=1.1, q_choice=1.):
         '''Initialize player with instructions of how to create heuristic.
         Args:
             num_features: <int> length of feature vector
