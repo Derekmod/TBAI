@@ -216,7 +216,7 @@ class AIPlayer(Player):
                 best_node = node
 
             moves += [node.move]
-            uprobs += [get_uprob(get_utility(node.value, state.player_turn), player_info)]
+            uprobs += [get_uprob(get_utility(node.value, state.player_turn), node.uncertainty, player_info)]
 
         if self.train_iterations > 0:
             prob_scale = random.uniform(0, sum(uprobs))
@@ -536,7 +536,6 @@ def get_probs(utilities, uncertainties, est_val, max_children, player_info):
     for i in range(len(utilities)):
         utility = utilities[i]
         uncertainty = uncertainties[i]
-        print(utility)
 
         if utility == 1.:
             probs = [0.] * max_children
