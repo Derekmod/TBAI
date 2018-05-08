@@ -129,7 +129,8 @@ class AIPlayer(Player):
 
         nchecked = 0
         target_slave = 0
-        while nchecked < self._max_states and len(pq): #terminal condition
+        flying_nodes = 0
+        while nchecked < self._max_states and len(pq) + flying_nodes: #terminal condition
             next = pq.pop()
             next_state = next.state
             compressed = next_state.compressed
@@ -145,11 +146,13 @@ class AIPlayer(Player):
 
             pipe = slave_pipes[target_slave]
             pipe.send(next_state)
+            flying_nodes += 1
 
             for pipe in slave_pipes:
                 if pipe.poll():
                     try:
                         obj = pipe.recv()
+                        flying_nodes -= 1
                         if not obj:
                             print('ERROR: slave closed before master [E1]')
                         heur_bundle, compressed = obj
