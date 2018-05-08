@@ -9,12 +9,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
+import time
 
 import numpy as np
 import math
 from qmath import *
 import random
-from asyncio import Queue
+#from asyncio import Queue
+from multiprocessing import Manager, Process, TimeoutError, Pipe
 
 '''PENDING
 Stronger priority
@@ -92,7 +94,7 @@ class AIPlayer(Player):
         else:
             return 0.5, self._max_uncertainty
 
-    def getMove(self, state):
+    def getMove(self, state, nslaves=0):
         '''Make the AI make a move.
         Args:
             state: <State>
@@ -113,13 +115,22 @@ class AIPlayer(Player):
 
         redundant = dict()
 
+        slave_procs = []
+        slave_pipes = []
+        for pidx in range(nslaves):
+            slave_pipe, pipe = Pipe()
+            proc = Process(target=evalStates, args=(pipe,))
+
+            slave_procs += [proc]
+            slave_pipes += [slave_pipe]
+
+            proc.start()
+
         nchecked = 0
-        next_recalc = 1
+        target_slave = 0
         while nchecked < self._max_states and len(pq): #terminal condition
             next = pq.pop()
-            #parent, move_list = root.pickLeaf()
             next_state = next.state
-            #next_state = parent.state.enactMove(move_list[-1])
             compressed = next_state.compressed
             if compressed not in redundant:
                 redundant[compressed] = next
@@ -131,34 +142,38 @@ class AIPlayer(Player):
                     pq.add(new_node)
                 continue
 
-            heur_bundle = self.heur(next_state)
-            new_nodes = next.check(heur_bundle)
+            pipe = slave_pipes[target_slave]
+            pipe.send(next_state)
 
-            for new_node in new_nodes:
-                pq.add(new_node)
+            for pipe in pipes:
+                if pipe.poll():
+                    try:
+                        obj = pipe.recv()
+                        if not obj:
+                            print('ERROR: slave closed before master [E1]')
+                        heur_bundle, compressed = obj
+                        new_nodes = redundant[compressed].check(heur_bundle)
+                        for new_node in new_nodes:
+                            pq.add(new_node)
+
             nchecked += 1
 
-            if nchecked >= next_recalc:
-                # PENDING: recalculate probabilities and uncertainties
-                cleaned = set()
-                unclean = Queue()
-                unclean.put_nowait(root)
+        for pipe in slave_pipes:
+            pipe.send(None)
 
-                while unclean.qsize() > 0:
-                    next = unclean.get_nowait()
-                    added = cleanNode(next, cleaned)
-                    for node in added:
-                        unclean.put_nowait(node)
+        active_indices = range(nslaves)
+        while len(active_pipes):
+            for slave_idx in active_indices:
+                try:
+                    obj = pipes[slave_idx].recv()
+                    if not obj:
+                        active_indices.remove(slave_idx)
+                        continue
+                    heur_bundle, compressed = obj
+                    redundant[compressed].check(heur_bundle)
+                except EOFError:
+                    active_indices.remove(slave_idx)
 
-                pq_old = pq
-                pq = PriorityQueue(hash_fn, value_fn)
-                while len(pq_old):
-                    pq.add(pq_old.pop())
-
-                next_recalc = int(next_recalc * self._recalc_power + 1)
-        # TODO: re add prints
-        #print('Checked %d states' % nchecked)
-        #print('%d states left for training' % len(player_info.training_nodes))
 
 
         if self.train_iterations:
@@ -206,6 +221,45 @@ class AIPlayer(Player):
         #return state.moves[0] #TEMP
         return best_node.move
 
+    def parallelGetMove(self, state, nprocesses=None):
+        '''Make the AI make a move.
+        Args:
+            state: <State>
+        Returns:
+            <Move> in the move_list of 'state'
+        '''
+        hash_fn = lambda node: node.state.compressed #TODO remove
+        #value_fn = lambda node: node._global_log_prob #TODO strengthen
+        value_fn = lambda node: node.depth
+
+        player_info = PlayerInfo(turn = state.player_turn,
+                                 prob_power = 0.1,
+                                 max_uncertainty = self._max_uncertainty,
+                                 q=self.q_choice)
+        root = StateNode(state, player_info)
+        pq.add(root)
+
+        with Manager() as manager:
+            shared_resources = dict()
+            shared_resources['tree_lock'] = manager.Lock()
+            shared_resources['active_nodes'] = manager.Queue()
+            shared_resources['node_count'] = manager.Value('i', 0)
+
+            #with Pool(processes=nprocesses) as pool:
+            procs = []
+            for pidx in range(nprocesses):
+                proc = Process(target=checkMoves, args=(self, root, shared_resources))
+                procs.append( proc )
+                proc.start()
+
+            for proc in procs:
+                proc.join()
+
+        
+
+        
+
+
     def train(self, X, Y):
         dataset = HeuristicDataset(X, Y)
         loader = get_loader(dataset)
@@ -245,37 +299,28 @@ class AIPlayer(Player):
                 #          (epoch + 1, i + 1, running_loss / 2000))
                 #    running_loss = 0.0
 
-def cleanNode(node, cleaned):
-    key = node.state.compressed
-    if key in cleaned:
-        return []
-    cleaned.add(key)
+    def checkStates(self, root, pipes):  # master function
 
-    if not node._checked:
-        return []
+        while node_count.value < self._max_states:
+            node_count.value += 1
 
-    if not node._parents:
-        node._global_log_prob = 0.
-    else:
-        l = []
-        for parent in node._parents:
-            if parent.state.compressed not in cleaned:
-                return [node]
-            v = 0.
-            v += parent._global_log_prob
-            v += math.log(parent._child_uprobs[key])
-            v -= math.log(parent._prob_scale)
-            l += [v]
-        #node._global_log_prob = log_sum([parent._global_log_prob + math.log(parent._child_uprobs[key]) - math.log(parent._prob_scale)
-        #                                 for parent in node._parents])
-        node._global_log_prob = log_sum(l)
-    
-    return node.children
+            next = root.pickLeaf()
+            heur_bundle = self.heur(next.state)
+            active_nodes.put( (next, heur_bundle) )
 
-    #node.recalcValue(propogate=False)
+            if tree_lock.acquire(False):
+                while not active_nodes.empty():
+                    node, heur_bundle = active_nodes.pop()
+                    node.check(heur_bundle)
+                    tree_lock.release()
+            time.sleep(0.01)
 
-    # TODO: recalc value
-    # TODO: recalc uncertainty
+    def evalStates(self, pipe):  # slave function
+
+        while node_count.value < self._max_states:
+            if not unchecked_nodes.empty():
+                pass
+
 
 
 class StateNode(object):
@@ -322,6 +367,7 @@ class StateNode(object):
         self._child_uprobs = dict()
         self._prob_scale = 0.
         self._depth = 0
+        self._clamped = False
         if parent:
             self._depth = parent._depth + 1
         self._max_children = 0
@@ -341,15 +387,27 @@ class StateNode(object):
         if not self._checked:
             print('ERROR: PICKING UNCHECKED NODE')
         if self._prob_scale < 1e-5 or random.uniform(0, 1) > float(len(self.children)) / self._max_children:
-            move = np.random.choice(self._pending_moves)
-            return self, [move]
+            ret = self._addChild()
+            if not len(ret):
+                print('ERROR: picked child without unexplored children')
+            return ret[0]
+            #move = np.random.choice(self._pending_moves)
+            #return self, [move]
         
-        child = self.pickChild()
-        ret_node, move_list = child.pickLeaf()
-        return ret_node, [self._move] + move_list
+        return self.pickChild().pickLeaf()
 
     def pickChild(self, randomize=True):
-        cplist = [(self._child_uprobs[child.state.compressed], child) for child in self.children]
+        cplist = []
+        scale = 0.
+        for child in self.children:
+            if not child._clamped:
+                uprob = self._child_uprobs[child.state.compressed]
+                cplist.append( (uprob, child) )
+                scale += uprob
+        if not len(cplist):
+            print('ERROR: picking with no unclamped children, but self is {} clamped'.format(self._clamped))
+
+        #cplist = [(self._child_uprobs[child.state.compressed], child) for child in self.children]
         if not randomize:
             cplist.sort(reverse=True)
             return cplist[0][1]
@@ -370,6 +428,11 @@ class StateNode(object):
         self._expected_value = heur_val
         self._uncertainty = uncertainty
         self._total_uncertainty = uncertainty
+
+        if uncertainty < 1e-5:
+            self._clamped = True
+            if self._parent:
+                self._parent.checkClamped()
 
         # TODO: get (unscaled) choice prob
         #parent_utility = get_utility(self._self_value, self.parent.state.player_turn)
@@ -399,6 +462,14 @@ class StateNode(object):
             self._max_children = len(self._pending_moves)
             added_nodes += self._addChild()
         return added_nodes
+
+    def checkClamped(self):
+        for child in self.children:
+            if not child._clamped:
+                return
+        self._clamped = True
+        if self._parent:
+            self._parent.checkClamped()
 
     def _addChild(self):
         '''Uses a pending move to create child.
