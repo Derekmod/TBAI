@@ -119,7 +119,7 @@ class AIPlayer(Player):
         slave_pipes = []
         for pidx in range(nslaves):
             slave_pipe, pipe = Pipe()
-            proc = Process(target=evalStates, args=(pipe,))
+            proc = Process(target=AIPlayer.evalStates, args=(self, pipe,))
 
             slave_procs += [proc]
             slave_pipes += [slave_pipe]
