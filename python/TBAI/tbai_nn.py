@@ -22,7 +22,7 @@ def gameActivation(input):
 
     return torch.cat((value, uncertainty), 1)
 
-class TBAINN(torch.nn.module):
+class TBAINN(torch.nn.Module):
     def __init__(self, qlog_growth_pow=0.1, qlog_reference_epoch=1000., start_epoch=0, start_q_choice=1.):
         self.qlog_growth_pow = qlog_growth_pow
         self.qlog_reference_epoch = qlog_reference_epoch
