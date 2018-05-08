@@ -524,6 +524,8 @@ def get_utility(value, player_turn):
     return sign*value + 1 - player_turn
 
 def get_uprob(utility, uncertainty, q=-1.):
+    if utility <= 0.:
+        return 0.
     #return (utility + 0.05) ** player_info.prob_power
     #return (utility + player_info.utility_cap) / (1 + player_info.utility_cap - utility)
     return -qlog(1. - utility, q)
