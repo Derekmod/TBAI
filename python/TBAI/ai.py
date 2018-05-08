@@ -148,6 +148,7 @@ class AIPlayer(Player):
                 pipe = slave_pipes[target_slave]
                 pipe.send(next_state)
                 flying_nodes += 1
+                nchecked += 1
 
             for pipe in slave_pipes:
                 if pipe.poll():
@@ -163,7 +164,6 @@ class AIPlayer(Player):
                     except EOFError:
                         print('ERROR: slave closed before master [E2]')
 
-            nchecked += 1
 
         for pipe in slave_pipes:
             pipe.send(None)
