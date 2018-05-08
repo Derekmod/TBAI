@@ -164,7 +164,7 @@ class AIPlayer(Player):
             pipe.send(None)
 
         active_indices = range(nslaves)
-        while len(active_pipes):
+        while len(active_indices):
             for slave_idx in active_indices:
                 try:
                     obj = pipes[slave_idx].recv()
