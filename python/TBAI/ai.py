@@ -131,22 +131,23 @@ class AIPlayer(Player):
         target_slave = 0
         flying_nodes = 0
         while nchecked < self._max_states and len(pq) + flying_nodes: #terminal condition
-            next = pq.pop()
-            next_state = next.state
-            compressed = next_state.compressed
-            if compressed not in redundant:
-                redundant[compressed] = next
-            else:
-                original = redundant[compressed]
-                #next = redundant[compressed]
-                #for new_node in next.parent._addChild():
-                for new_node in next.reportRedundant(original):
-                    pq.add(new_node)
-                continue
+            if len(pq):
+                next = pq.pop()
+                next_state = next.state
+                compressed = next_state.compressed
+                if compressed not in redundant:
+                    redundant[compressed] = next
+                else:
+                    original = redundant[compressed]
+                    #next = redundant[compressed]
+                    #for new_node in next.parent._addChild():
+                    for new_node in next.reportRedundant(original):
+                        pq.add(new_node)
+                    continue
 
-            pipe = slave_pipes[target_slave]
-            pipe.send(next_state)
-            flying_nodes += 1
+                pipe = slave_pipes[target_slave]
+                pipe.send(next_state)
+                flying_nodes += 1
 
             for pipe in slave_pipes:
                 if pipe.poll():
