@@ -145,7 +145,7 @@ class AIPlayer(Player):
             pipe = slave_pipes[target_slave]
             pipe.send(next_state)
 
-            for pipe in pipes:
+            for pipe in slave_pipes:
                 if pipe.poll():
                     try:
                         obj = pipe.recv()
